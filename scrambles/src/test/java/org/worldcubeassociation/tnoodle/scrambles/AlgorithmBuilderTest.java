@@ -14,7 +14,7 @@ public class AlgorithmBuilderTest {
     void testRedundantMoves() throws InvalidMoveException {
         // This test doesn't really belong here, but I don't have a better
         // place for it right now.
-        Puzzle sixes = new CubePuzzle(6);
+        CubePuzzle sixes = new CubePuzzle(6);
         Set<String> moves = sixes.getSolvedState().getScrambleSuccessors().keySet();
 
         assertFalse(moves.contains("3Bw"));
@@ -23,12 +23,12 @@ public class AlgorithmBuilderTest {
 
         for (PuzzleRegistry lazyEntry : PuzzleRegistry.values()) {
             String puzzle = lazyEntry.getKey();
-            Puzzle scrambler = lazyEntry.getScrambler();
+            Puzzle<?> scrambler = lazyEntry.getScrambler();
 
             System.out.println("Testing redundant moves on " + puzzle);
 
             for (String move : scrambler.getSolvedState().getSuccessorsByName().keySet()) {
-                AlgorithmBuilder ab = new AlgorithmBuilder(scrambler, AlgorithmBuilder.MergingMode.NO_MERGING);
+                AlgorithmBuilder<?> ab = new AlgorithmBuilder(scrambler, AlgorithmBuilder.MergingMode.NO_MERGING);
                 ab.appendAlgorithm(move);
 
                 // Right now, it is true to say that for every single WCA puzzle,

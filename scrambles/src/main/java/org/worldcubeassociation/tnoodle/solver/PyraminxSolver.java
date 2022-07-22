@@ -1,8 +1,13 @@
-package org.worldcubeassociation.tnoodle.puzzle;
+package org.worldcubeassociation.tnoodle.solver;
+
+import org.worldcubeassociation.tnoodle.scrambles.PuzzleSolutionEngine;
+import org.worldcubeassociation.tnoodle.state.PyraminxState;
 
 import java.util.Random;
 
-public class PyraminxSolver {
+public class PyraminxSolver extends PuzzleSolutionEngine<PyraminxState> {
+    private static final boolean SCRAMBLE_LENGTH_INCLUDES_TIPS = true;
+
     public PyraminxSolver() {}
 
         /** There are 4 corners on the pyraminx that are in a fixed position.
@@ -262,8 +267,8 @@ public class PyraminxSolver {
     /**
      * Fill the pruning tables for the permutation and orientation coordinates.
      */
-    private static int[] prunPerm = new int[N_EDGE_PERM];
-    private static int[] prunOrient = new int[N_ORIENT];
+    private static final int[] prunPerm = new int[N_EDGE_PERM];
+    private static final int[] prunOrient = new int[N_ORIENT];
     private static void initPrun() {
         for (int perm = 0; perm < N_EDGE_PERM; perm++) {
             prunPerm[perm] = -1;
@@ -365,6 +370,11 @@ public class PyraminxSolver {
             }
         }
         return false;
+    }
+
+    @Override
+    public String solveIn(PyraminxState puzzleState, int n) {
+        return solveIn(puzzleState.toPyraminxSolverState(), n, SCRAMBLE_LENGTH_INCLUDES_TIPS);
     }
 
     public static class PyraminxSolverState {

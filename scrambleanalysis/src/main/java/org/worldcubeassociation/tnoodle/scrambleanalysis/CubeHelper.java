@@ -2,7 +2,7 @@ package org.worldcubeassociation.tnoodle.scrambleanalysis;
 
 import cs.min2phase.Search;
 import cs.min2phase.SearchWCA;
-import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import static org.worldcubeassociation.tnoodle.scrambleanalysis.utils.StringUtils.stringCompareIgnoringOrder;
 
@@ -66,7 +66,7 @@ public class CubeHelper {
         return result;
     }
 
-    public static int countMisorientedEdges(CubePuzzle.CubeState cubeState) throws RepresentationException {
+    public static int countMisorientedEdges(CubeState cubeState) throws RepresentationException {
         String representation = cubeState.toFaceCube();
         return countMisorientedEdges(representation);
     }

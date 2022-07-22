@@ -5,6 +5,7 @@ import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.scrambles.AlgorithmBuilder;
 import org.worldcubeassociation.tnoodle.scrambles.PuzzleStateAndGenerator;
 import org.timepedia.exporter.client.Export;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 @Export
 public class ThreeByThreeCubeFewestMovesPuzzle extends ThreeByThreeCubePuzzle {
@@ -13,7 +14,7 @@ public class ThreeByThreeCubeFewestMovesPuzzle extends ThreeByThreeCubePuzzle {
     }
 
     @Override
-    public PuzzleStateAndGenerator generateRandomMoves(Random r) {
+    public PuzzleStateAndGenerator<CubeState> generateRandomMoves(Random r) {
         // For fewest moves, we want to minimize the probability that the
         // scramble has useful "stuff" in it. The problem with conventional
         // Kociemba 2 phase solutions is that there's a pretty obvious
@@ -83,8 +84,8 @@ public class ThreeByThreeCubeFewestMovesPuzzle extends ThreeByThreeCubePuzzle {
         // and we need to make sure that sol_0' doesn't cancel with the first move of
         // scrambleSuffix:
         String solutionFirstAxisRestriction = scrambleSuffix[0].substring(0, 1);
-        PuzzleStateAndGenerator psag = super.generateRandomMoves(r, solutionFirstAxisRestriction, solutionLastAxisRestriction);
-        AlgorithmBuilder ab = new AlgorithmBuilder(this, AlgorithmBuilder.MergingMode.NO_MERGING);
+        PuzzleStateAndGenerator<CubeState> psag = super.generateRandomMoves(r, solutionFirstAxisRestriction, solutionLastAxisRestriction);
+        AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<CubeState>(this, AlgorithmBuilder.MergingMode.NO_MERGING);
         try {
             ab.appendAlgorithms(scramblePrefix);
             ab.appendAlgorithm(psag.generator);

@@ -6,10 +6,9 @@ import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
 import org.worldcubeassociation.tnoodle.puzzle.ThreeByThreeCubePuzzle;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.scrambles.InvalidScrambleException;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 public class CubeHelperTest {
 
@@ -24,7 +23,7 @@ public class CubeHelperTest {
 		// multiple of 3.
 		for (int i = 0; i < n; i++) {
 			String scramble = cube.generateScramble();
-			CubePuzzle.CubeState state = (CubePuzzle.CubeState) cube.getSolvedState().applyAlgorithm(scramble);
+			CubeState state = cube.getSolvedState().applyAlgorithm(scramble);
 			String representation = state.toFaceCube();
 
 			int misorientedEdges = CubeHelper.countMisorientedEdges(representation);
@@ -64,15 +63,15 @@ public class CubeHelperTest {
 		String scramble2 = "F' B";
 		String scramble3 = "F U F";
 
-		CubePuzzle.CubeState state1 = (CubePuzzle.CubeState) cube.getSolvedState().applyAlgorithm(scramble1);
+		CubeState state1 = cube.getSolvedState().applyAlgorithm(scramble1);
 		String representation1 = state1.toFaceCube();
 		int result1 = CubeHelper.countMisorientedEdges(representation1);
 
-		CubePuzzle.CubeState state2 = (CubePuzzle.CubeState) cube.getSolvedState().applyAlgorithm(scramble2);
+		CubeState state2 = cube.getSolvedState().applyAlgorithm(scramble2);
 		String representation2 = state2.toFaceCube();
 		int result2 = CubeHelper.countMisorientedEdges(representation2);
 
-		CubePuzzle.CubeState state3 = (CubePuzzle.CubeState) cube.getSolvedState().applyAlgorithm(scramble3);
+		CubeState state3 = cube.getSolvedState().applyAlgorithm(scramble3);
 		String representation3 = state3.toFaceCube();
 		int result3 = CubeHelper.countMisorientedEdges(representation3);
 
@@ -124,7 +123,7 @@ public class CubeHelperTest {
 	}
 
 	private String getRepresentation(String scramble) throws InvalidScrambleException {
-		CubePuzzle.CubeState state = (CubePuzzle.CubeState) cube.getSolvedState().applyAlgorithm(scramble);
+		CubeState state = cube.getSolvedState().applyAlgorithm(scramble);
 		return state.toFaceCube();
 	}
 }

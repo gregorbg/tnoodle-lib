@@ -1,9 +1,9 @@
 package org.worldcubeassociation.tnoodle.scrambles;
 
-public class PuzzleStateAndGenerator {
-    public Puzzle.PuzzleState state;
+public class PuzzleStateAndGenerator<PS extends PuzzleState<PS>> {
+    public PS state;
     public String generator;
-    public PuzzleStateAndGenerator(Puzzle.PuzzleState state, String generator) {
+    public PuzzleStateAndGenerator(PS state, String generator) {
         this.state = state;
         this.generator = generator;
     }

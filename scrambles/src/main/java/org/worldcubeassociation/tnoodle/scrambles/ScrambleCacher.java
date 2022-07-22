@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 /*
  * In addition to speeding things up, this class provides thread safety.
  */
-public class ScrambleCacher {
+public class ScrambleCacher<PS extends PuzzleState<PS>> {
     private static final Logger l = Logger.getLogger(ScrambleCacher.class.getName());
     private static final int DEFAULT_CACHE_SIZE = 100;
 
@@ -24,17 +24,17 @@ public class ScrambleCacher {
     private volatile int startBuf = 0;
     private volatile int available = 0;
 
-    public ScrambleCacher(final Puzzle puzzle) {
+    public ScrambleCacher(final Puzzle<PS> puzzle) {
         this(puzzle, DEFAULT_CACHE_SIZE, false);
     }
 
     private volatile Throwable exception;
     private boolean running = false;
-    public ScrambleCacher(final Puzzle puzzle, int cacheSize, final boolean drawScramble, ScrambleCacherListener l) {
+    public ScrambleCacher(final Puzzle<PS> puzzle, int cacheSize, final boolean drawScramble, ScrambleCacherListener<PS> l) {
         this(puzzle, cacheSize, drawScramble);
         ls.add(l);
     }
-    public ScrambleCacher(final Puzzle puzzle, int cacheSize, final boolean drawScramble) {
+    public ScrambleCacher(final Puzzle<PS> puzzle, int cacheSize, final boolean drawScramble) {
         assert cacheSize > 0;
         scrambles = new String[cacheSize];
         Thread t = new Thread(() -> {
@@ -51,7 +51,7 @@ public class ScrambleCacher {
                     // The drawScramble option exists so we can test out generating and drawing
                     // a bunch of scrambles in 2 threads at the same time. See ScrambleTest.
                     try {
-                        puzzle.drawScramble(scramble, null);
+                        puzzle.getPainter().drawScramble(scramble, null);
                     } catch (InvalidScrambleException e1) {
                         l.log(Level.SEVERE,
                               "Error drawing scramble we just created. ",
@@ -100,13 +100,13 @@ public class ScrambleCacher {
         return running;
     }
 
-    private final List<ScrambleCacherListener> ls = new LinkedList<>();
+    private final List<ScrambleCacherListener<PS>> ls = new LinkedList<>();
     /**
      * This method will notify all listeners that the cache size has changed.
      * NOTE: Do NOT call this method while holding any monitors!
      */
     private void fireScrambleCacheUpdated() {
-        for(ScrambleCacherListener l : ls) {
+        for(ScrambleCacherListener<PS> l : ls) {
             l.scrambleCacheUpdated(this);
         }
     }

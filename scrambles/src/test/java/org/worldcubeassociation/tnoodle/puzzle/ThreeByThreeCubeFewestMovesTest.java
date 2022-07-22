@@ -7,6 +7,8 @@ import org.worldcubeassociation.tnoodle.scrambles.Puzzle;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.worldcubeassociation.tnoodle.solver.TwoPhaseCubeSolver;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import java.util.*;
 
@@ -29,6 +31,7 @@ public class ThreeByThreeCubeFewestMovesTest {
     @Test
     public void testSomething() throws InvalidScrambleException, InvalidMoveException {
         ThreeByThreeCubeFewestMovesPuzzle threeFm = new ThreeByThreeCubeFewestMovesPuzzle();
+        TwoPhaseCubeSolver twoPhaseEngine = new TwoPhaseCubeSolver();
 
         Collection<String> canonicalMoves = threeFm.getSolvedState().getCanonicalMovesByState().values();
 
@@ -43,7 +46,7 @@ public class ThreeByThreeCubeFewestMovesTest {
 
         Assertions.assertEquals(new HashSet<>(canonicalMoves), new HashSet<>(desiredCanonicalMoves));
 
-        Puzzle.PuzzleState solved = threeFm.getSolvedState();
+        CubeState solved = threeFm.getSolvedState();
 
         String faces = "URFDLB";
 
@@ -57,14 +60,14 @@ public class ThreeByThreeCubeFewestMovesTest {
             }
         }
 
-        Puzzle.PuzzleState scrambled = solved.applyAlgorithm("L' R2 U D2 L2");
-        String solution = threeFm.solveIn(scrambled, 20, "L", "L");
+        CubeState scrambled = solved.applyAlgorithm("L' R2 U D2 L2");
+        String solution = twoPhaseEngine.solveIn(scrambled, 20, "L", "L");
 
-        assertTrue(scrambled.applyAlgorithm(solution).isSolved());
+        assertTrue(solved.equalsNormalized(scrambled.applyAlgorithm(solution)));
 
         scrambled = solved.applyAlgorithm("L' R2 U D2 L2");
-        solution = threeFm.solveIn(scrambled, 20, "L", "L");
-        assertTrue(scrambled.applyAlgorithm(solution).isSolved());
+        solution = twoPhaseEngine.solveIn(scrambled, 20, "L", "L");
+        assertTrue(solved.equalsNormalized(scrambled.applyAlgorithm(solution)));
 
         String[] moves = solution.split(" ");
 
@@ -79,13 +82,13 @@ public class ThreeByThreeCubeFewestMovesTest {
         for (int i = 0; i < 10; i++) {
             String uncancelledScramble = threeFm.generateWcaScramble(r);
 
-            AlgorithmBuilder ab = new AlgorithmBuilder(threeFm, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+            AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<CubeState>(threeFm, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
             ab.appendAlgorithm(uncancelledScramble);
 
             String scramble = ab.getStateAndGenerator().generator;
             assertEquals(scramble.length(), uncancelledScramble.length());
 
-            System.out.println(String.format("%s move 333fm scramble: %s", scramble.split(" ").length, scramble));
+            System.out.printf("%s move 333fm scramble: %s%n", scramble.split(" ").length, scramble);
 
             assertTrue(scramble.startsWith("R' U' F"));
             assertTrue(scramble.endsWith("R' U' F"));
@@ -93,17 +96,18 @@ public class ThreeByThreeCubeFewestMovesTest {
     }
 
     public void testSolveIn(ThreeByThreeCubeFewestMovesPuzzle threeFm, String scramble, String firstAxisRestriction, String lastAxisRestriction) throws InvalidScrambleException, InvalidMoveException {
+        TwoPhaseCubeSolver twoPhaseEngine = new TwoPhaseCubeSolver();
         // Search for a solution to a cube scrambled with scramble,
         // but require that that solution not start or end with restriction.
-        Puzzle.PuzzleState solved = threeFm.getSolvedState();
+        CubeState solved = threeFm.getSolvedState();
 
-        Puzzle.PuzzleState u = solved.apply(scramble);
-        String solution = threeFm.solveIn(u, 20, firstAxisRestriction, lastAxisRestriction);
+        CubeState u = solved.apply(scramble);
+        String solution = twoPhaseEngine.solveIn(u, 20, firstAxisRestriction, lastAxisRestriction);
 
-        System.out.println(String.format("Solution to %s (solution may not start with %s axis and may not end with %s axis): %s", scramble, firstAxisRestriction, lastAxisRestriction, solution));
+        System.out.printf("Solution to %s (solution may not start with %s axis and may not end with %s axis): %s%n", scramble, firstAxisRestriction, lastAxisRestriction, solution);
 
-        Puzzle.PuzzleState shouldBeSolved = u.applyAlgorithm(solution);
-        assertTrue(shouldBeSolved.isSolved());
+        CubeState shouldBeSolved = u.applyAlgorithm(solution);
+        assertTrue(threeFm.getSolvedState().equalsNormalized(shouldBeSolved));
 
         String[] moves = solution.split(" ");
 

@@ -1,8 +1,11 @@
-package org.worldcubeassociation.tnoodle.puzzle;
+package org.worldcubeassociation.tnoodle.solver;
+
+import org.worldcubeassociation.tnoodle.scrambles.PuzzleSolutionEngine;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import java.util.Random;
 
-public class TwoByTwoSolver {
+public class TwoByTwoSolver extends PuzzleSolutionEngine<CubeState> {
     public TwoByTwoSolver() {}
 
     /***
@@ -302,6 +305,11 @@ public class TwoByTwoSolver {
             solutionFound |= search( newPerm, newOrient, depth+1, length-1, move, solution, best_solution );
         }
         return solutionFound;
+    }
+
+    @Override
+    public String solveIn(CubeState puzzleState, int n) {
+        return solveIn(puzzleState.toTwoByTwoState(), n);
     }
 
     public static class TwoByTwoState {

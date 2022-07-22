@@ -5,6 +5,8 @@ import org.worldcubeassociation.tnoodle.scrambles.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.scrambles.Puzzle;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.worldcubeassociation.tnoodle.solver.TwoPhaseCubeSolver;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import java.util.*;
 
@@ -26,7 +28,7 @@ public class NoInspectionThreeByThreeTest {
 
     @Test
     public void testSomething() throws InvalidMoveException, InvalidScrambleException {
-        Puzzle twos = new TwoByTwoCubePuzzle();
+        TwoByTwoCubePuzzle twos = new TwoByTwoCubePuzzle();
         Collection<String> canonicalMoves = twos.getSolvedState().getCanonicalMovesByState().values();
 
         List<String> desiredCanonicalMoves = new ArrayList<>();
@@ -41,7 +43,7 @@ public class NoInspectionThreeByThreeTest {
         assertEquals(new HashSet<>(canonicalMoves), new HashSet<>(desiredCanonicalMoves));
 
         NoInspectionThreeByThreeCubePuzzle threes = new NoInspectionThreeByThreeCubePuzzle();
-        Puzzle.PuzzleState solved = threes.getSolvedState();
+        CubeState solved = threes.getSolvedState();
 
         String faces = "URFDLB";
 
@@ -60,23 +62,25 @@ public class NoInspectionThreeByThreeTest {
             }
         }
 
-        Puzzle.PuzzleState scrambled = solved.applyAlgorithm("L' R2 U D2 L2");
-        String solution = threes.solveIn(scrambled, 20, "L", null);
+        TwoPhaseCubeSolver twoPhaseEngine = new TwoPhaseCubeSolver();
+
+        CubeState scrambled = solved.applyAlgorithm("L' R2 U D2 L2");
+        String solution = twoPhaseEngine.solveIn(scrambled, 20, "L", null);
 
         assertFalse(solution.startsWith("L"));
-        assertTrue(scrambled.applyAlgorithm(solution).isSolved());
+        assertTrue(solved.equalsNormalized(scrambled.applyAlgorithm(solution)));
 
         // min2phase can look at the inverse of a given cube and try to solve it.
         // This can screw up restricting the first turn, however. Check that
         // min2phase handles this correctly. This particular
         // scramble and restriction caused tickled this behavior originally.
         scrambled = solved.applyAlgorithm("F D B L' U L' F D' L2 D L' B2 D F2 U B2 R2 U D2 L2");
-        solution = threes.solveIn(scrambled, 20, "L", null);
+        solution = twoPhaseEngine.solveIn(scrambled, 20, "L", null);
 
         assertFalse(solution.startsWith("L"));
         assertFalse(solution.startsWith("R"));
 
-        assertTrue(scrambled.applyAlgorithm(solution).isSolved());
+        assertTrue(solved.equalsNormalized(scrambled.applyAlgorithm(solution)));
 
         Random r = Puzzle.getSecureRandom();
 
@@ -86,14 +90,15 @@ public class NoInspectionThreeByThreeTest {
     }
 
     public void testSolveIn(NoInspectionThreeByThreeCubePuzzle threeNi, String scramble, String axisRestriction) throws InvalidScrambleException, InvalidMoveException {
+        TwoPhaseCubeSolver twoPhaseEngine = new TwoPhaseCubeSolver();
         // Search for a solution to a cube scrambled with scramble,
         // but require that that solution not start with restriction
-        Puzzle.PuzzleState solved = threeNi.getSolvedState();
+        CubeState solved = threeNi.getSolvedState();
 
-        Puzzle.PuzzleState u = solved.apply(scramble);
-        String solution = threeNi.solveIn(u, 20, axisRestriction, null);
+        CubeState u = solved.apply(scramble);
+        String solution = twoPhaseEngine.solveIn(u, 20, axisRestriction, null);
 
-        System.out.println(String.format("Solution to %s (restriction %s): %s", scramble, axisRestriction, solution));
+        System.out.printf("Solution to %s (restriction %s): %s%n", scramble, axisRestriction, solution);
 
         // restriction defines an axis of turns that may not start a solution,
         // so we assert the solution starts with neither restriction, nor
@@ -101,7 +106,7 @@ public class NoInspectionThreeByThreeTest {
         assertFalse(solution.startsWith(axisRestriction));
         assertFalse(solution.startsWith(OPPOSITE_FACES.get(axisRestriction)));
 
-        Puzzle.PuzzleState shouldBeSolved = u.applyAlgorithm(solution);
-        assert shouldBeSolved.isSolved();
+        CubeState shouldBeSolved = u.applyAlgorithm(solution);
+        assertTrue(threeNi.getSolvedState().equalsNormalized(shouldBeSolved));
     }
 }

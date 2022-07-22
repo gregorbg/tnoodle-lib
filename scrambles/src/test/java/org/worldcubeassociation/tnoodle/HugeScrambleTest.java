@@ -14,14 +14,19 @@ import org.worldcubeassociation.tnoodle.puzzle.SquareOnePuzzle;
 import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
 import org.worldcubeassociation.tnoodle.puzzle.ThreeByThreeCubePuzzle;
 import org.worldcubeassociation.tnoodle.puzzle.PyraminxPuzzle;
-import org.worldcubeassociation.tnoodle.puzzle.PyraminxSolver;
-import org.worldcubeassociation.tnoodle.puzzle.PyraminxSolver.PyraminxSolverState;
+import org.worldcubeassociation.tnoodle.solver.PyraminxSolver;
+import org.worldcubeassociation.tnoodle.solver.PyraminxSolver.PyraminxSolverState;
 import org.worldcubeassociation.tnoodle.puzzle.MegaminxPuzzle;
-import org.worldcubeassociation.tnoodle.puzzle.TwoByTwoSolver;
-import org.worldcubeassociation.tnoodle.puzzle.TwoByTwoSolver.TwoByTwoState;
+import org.worldcubeassociation.tnoodle.solver.TwoByTwoSolver;
+import org.worldcubeassociation.tnoodle.solver.TwoByTwoSolver.TwoByTwoState;
 import org.junit.jupiter.api.Test;
 import org.timepedia.exporter.client.Export;
 import org.timepedia.exporter.client.Exportable;
+import org.worldcubeassociation.tnoodle.state.ClockState;
+import org.worldcubeassociation.tnoodle.state.CubeState;
+import org.worldcubeassociation.tnoodle.state.MegaminxState;
+import org.worldcubeassociation.tnoodle.state.PyraminxState;
+import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
 public class HugeScrambleTest {
     private static final Logger l = Logger.getLogger(HugeScrambleTest.class.getName());
@@ -79,9 +84,10 @@ public class HugeScrambleTest {
                 String scramble = scrambler.generateWcaScramble(r);
                 System.out.println("Filtering for scramble " + scramble);
 
-                Puzzle.PuzzleState state = scrambler.getSolvedState().applyAlgorithm(scramble);
+                PuzzleState state = scrambler.getSolvedState().applyAlgorithm(scramble);
+                PuzzleSolutionEngine solver = scrambler.getSolutionEngine();
 
-                assertSame(state.solveIn(scrambler.getWcaMinScrambleDistance() - 1), null);
+                assertSame(solver.solveIn(state, scrambler.getWcaMinScrambleDistance() - 1), null);
             }
         }
     }
@@ -93,29 +99,31 @@ public class HugeScrambleTest {
 
         for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
             final String puzzle = lazyScrambler.getKey();
-            final Puzzle scrambler = lazyScrambler.getScrambler();
+            final Puzzle<?> scrambler = lazyScrambler.getScrambler();
 
             System.out.println("Testing " + puzzle);
 
+            PuzzleSolutionEngine engine = scrambler.getSolutionEngine();
+
             // Test solving the solved state
-            String solution = scrambler.getSolvedState().solveIn(0);
+            String solution = engine.solveIn(scrambler.getSolvedState(), 0);
             assertEquals("", solution);
 
             for(int count = 0; count < SCRAMBLE_COUNT; count++) {
                 System.out.print("Scramble ["+(count+1)+"/"+SCRAMBLE_COUNT+"]: ");
-                Puzzle.PuzzleState state = scrambler.getSolvedState();
+                PuzzleState state = scrambler.getSolvedState();
                 for(int i = 0; i < SCRAMBLE_LENGTH; i++){
-                    Map<String, ? extends Puzzle.PuzzleState> successors = state.getSuccessorsByName();
-                    String move = Puzzle.choose(r, successors.keySet());
+                    Map<String, ? extends PuzzleState> successors = state.getSuccessorsByName();
+                    String move = ArrayUtils.choose(r, successors.keySet());
                     System.out.print(" "+move);
                     state = successors.get(move);
                 }
                 System.out.print("...");
-                solution = state.solveIn(SCRAMBLE_LENGTH);
+                solution = engine.solveIn(state, SCRAMBLE_LENGTH);
                 assertNotNull(solution, "Puzzle "+scrambler.getShortName()+" solveIn method failed!");
                 System.out.println("Found: "+solution);
                 state = state.applyAlgorithm(solution);
-                assertTrue(state.isSolved(), "Solution was not correct");
+                assertTrue(scrambler.getSolvedState().equalsNormalized(state), "Solution was not correct");
             }
         }
     }
@@ -129,7 +137,7 @@ public class HugeScrambleTest {
 
         for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
             final String puzzle = lazyScrambler.getKey();
-            final Puzzle scrambler = lazyScrambler.getScrambler();
+            final Puzzle<?> scrambler = lazyScrambler.getScrambler();
 
             System.out.println("Testing " + puzzle);
 
@@ -145,15 +153,15 @@ public class HugeScrambleTest {
 
             // Drawing that scramble
             System.out.println("Drawing " + scramble);
-            scrambler.drawScramble(scramble, null);
+            scrambler.getPainter().drawScramble(scramble, null);
 
             // Scramblers should support "null" as the empty scramble
-            scrambler.drawScramble(null, null);
+            scrambler.getPainter().drawScramble(null, null);
 
             System.out.println("Generating & drawing 2 sets of " + SCRAMBLE_COUNT + " scrambles simultaneously." +
                                 " This is meant to shake out threading problems in scramblers.");
             final Object[] o = new Object[0];
-            ScrambleCacherListener cacherStopper = src -> {
+            ScrambleCacherListener<?> cacherStopper = (ScrambleCacherListener) src -> {
                 System.out.println(Thread.currentThread() + " " + src.getAvailableCount() + " / " + src.getCacheSize());
                 if(src.getAvailableCount() == src.getCacheSize()) {
                     src.stop();
@@ -162,8 +170,8 @@ public class HugeScrambleTest {
                     }
                 }
             };
-            ScrambleCacher c1 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT, drawScramble, cacherStopper);
-            ScrambleCacher c2 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT, drawScramble, cacherStopper);
+            ScrambleCacher<?> c1 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT, drawScramble, cacherStopper);
+            ScrambleCacher<?> c2 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT, drawScramble, cacherStopper);
             while(c1.isRunning() || c2.isRunning()) {
                 synchronized(o) {
                     try {
@@ -206,9 +214,10 @@ public class HugeScrambleTest {
     @Test
     public void testClockPuzzle() throws InvalidScrambleException {
         ClockPuzzle clock = new ClockPuzzle();
-        ClockPuzzle.ClockState state = (ClockPuzzle.ClockState)clock.getSolvedState();
-        state = (ClockPuzzle.ClockState)state.applyAlgorithm("ALL2+ y2 ALL1-"); // This scramble is breaking the solveIn method...
-        String solution = state.solveIn(3);
+        PuzzleSolutionEngine<ClockState> engine = clock.getSolutionEngine();
+        ClockState state = clock.getSolvedState();
+        state = state.applyAlgorithm("ALL2+ y2 ALL1-"); // This scramble is breaking the solveIn method...
+        String solution = engine.solveIn(state, 3);
         if(solution == null) {
             System.out.println("No solution");
         } else {
@@ -226,34 +235,34 @@ public class HugeScrambleTest {
     @Test
     public void testCubeNormalization() throws InvalidScrambleException, InvalidMoveException {
         CubePuzzle fours = new CubePuzzle(4);
-        CubePuzzle.CubeState solved = fours.getSolvedState();
+        CubeState solved = fours.getSolvedState();
 
-        CubePuzzle.CubeState state = (CubePuzzle.CubeState) solved.applyAlgorithm("Rw Lw'");
-        CubePuzzle.CubeState normalizedState = state.getNormalized();
-        CubePuzzle.CubeState normalizedSolvedState = solved.getNormalized();
+        CubeState state = solved.applyAlgorithm("Rw Lw'");
+        CubeState normalizedState = state.getNormalized();
+        CubeState normalizedSolvedState = solved.getNormalized();
         assertEquals(normalizedState, normalizedSolvedState);
         assertEquals(normalizedState.hashCode(), normalizedSolvedState.hashCode());
 
-        state = (CubePuzzle.CubeState) solved.applyAlgorithm("Uw Dw'");
+        state = solved.applyAlgorithm("Uw Dw'");
         normalizedState = state.getNormalized();
         assertEquals(normalizedState, normalizedSolvedState);
 
         CubePuzzle threes = new ThreeByThreeCubePuzzle();
 
         solved = threes.getSolvedState();
-        CubePuzzle.CubeState bDone = (CubePuzzle.CubeState) solved.apply("B");
-        CubePuzzle.CubeState fwDone = (CubePuzzle.CubeState) solved.apply("Fw");
+        CubeState bDone = solved.apply("B");
+        CubeState fwDone = solved.apply("Fw");
         assertTrue(bDone.equalsNormalized(fwDone));
 
-        AlgorithmBuilder ab3 = new AlgorithmBuilder(threes, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+        AlgorithmBuilder<CubeState> ab3 = new AlgorithmBuilder<CubeState>(threes, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
         String alg = "D2 U' L2 B2 F2 D B2 U' B2 F D' F U' R F2 L2 D' B D F'";
         ab3.appendAlgorithm(alg);
         assertEquals(ab3.toString(), alg);
 
         for(int depth = 0; depth < 100; depth++) {
-            state = Puzzle.choose(r, state.getSuccessorsByName().values());
+            state = ArrayUtils.choose(r, state.getSuccessorsByName().values());
             normalizedState = state.getNormalized();
-            Puzzle.PuzzleState rotatedState = state.applyAlgorithm("Uw Dw'").getNormalized();
+            CubeState rotatedState = state.applyAlgorithm("Uw Dw'").getNormalized();
             assertEquals(normalizedState, rotatedState);
         }
     }
@@ -299,7 +308,7 @@ public class HugeScrambleTest {
         permute = TwoByTwoSolver.movePerm[permute][MOVE_R];
 
         CubePuzzle twos = new CubePuzzle(2);
-        CubePuzzle.CubeState state = (CubePuzzle.CubeState) twos.getSolvedState().apply("R");
+        CubeState state = twos.getSolvedState().apply("R");
         TwoByTwoState twoByTwoState = state.toTwoByTwoState();
 
         assertEquals(twoByTwoState.orientation, orient);
@@ -318,15 +327,16 @@ public class HugeScrambleTest {
     @Test
     public void testTwosSolver() throws InvalidScrambleException {
         CubePuzzle twos = new CubePuzzle(2);
-        CubePuzzle.CubeState state = twos.getSolvedState();
-        String solution = state.solveIn(0);
+        PuzzleSolutionEngine<CubeState> engine = twos.getSolutionEngine();
+        CubeState state = twos.getSolvedState();
+        String solution = engine.solveIn(state, 0);
         assertEquals(solution, "");
 
-        state = (CubePuzzle.CubeState) state.applyAlgorithm("R2 B2 F2");
-        solution = state.solveIn(1);
+        state = state.applyAlgorithm("R2 B2 F2");
+        solution = engine.solveIn(state, 1);
         assertNotEquals(solution, null);
-        state = (CubePuzzle.CubeState) state.applyAlgorithm(solution);
-        assertTrue(state.isSolved());
+        state = state.applyAlgorithm(solution);
+        assertTrue(twos.getSolvedState().equalsNormalized(state));
     }
 
     @Test
@@ -341,7 +351,7 @@ public class HugeScrambleTest {
         final String[] moveToString = {"U", "U'", "L", "L'", "R", "R'", "B", "B'"};
 
         PyraminxPuzzle pyra = new PyraminxPuzzle();
-        PyraminxPuzzle.PyraminxState state = (PyraminxPuzzle.PyraminxState) pyra.getSolvedState();
+        PyraminxState state = pyra.getSolvedState();
         PyraminxSolverState sstate = state.toPyraminxSolverState();
         assertEquals(sstate.edgePerm, edgePerm);
         assertEquals(sstate.edgeOrient, edgeOrient);
@@ -353,13 +363,13 @@ public class HugeScrambleTest {
             edgePerm = 0;
             edgeOrient = 0;
             cornerOrient = 0;
-            state = (PyraminxPuzzle.PyraminxState) pyra.getSolvedState();
+            state = pyra.getSolvedState();
             for (int j = 0; j < SCRAMBLE_LENGTH; j++){
                 int move = r.nextInt(moveToString.length);
                 edgePerm = PyraminxSolver.moveEdgePerm[edgePerm][move];
                 edgeOrient = PyraminxSolver.moveEdgeOrient[edgeOrient][move];
                 cornerOrient = PyraminxSolver.moveCornerOrient[cornerOrient][move];
-                state = (PyraminxPuzzle.PyraminxState) state.apply(moveToString[move]);
+                state = state.apply(moveToString[move]);
             }
             sstate = state.toPyraminxSolverState();
 
@@ -373,11 +383,11 @@ public class HugeScrambleTest {
     @Test
     public void testMega() throws InvalidScrambleException {
         MegaminxPuzzle megaminx = new MegaminxPuzzle();
-        Puzzle.PuzzleState solved = megaminx.getSolvedState();
+        MegaminxState solved = megaminx.getSolvedState();
 
         String spinL = "R++ L2'";
         String spinU = "D++ U2'";
-        Puzzle.PuzzleState state = solved.applyAlgorithm(spinL).applyAlgorithm(spinU).applyAlgorithm(spinU).applyAlgorithm(spinL).applyAlgorithm(spinL).applyAlgorithm(spinL);
+        MegaminxState state = solved.applyAlgorithm(spinL).applyAlgorithm(spinU).applyAlgorithm(spinU).applyAlgorithm(spinL).applyAlgorithm(spinL).applyAlgorithm(spinL);
         state = state.applyAlgorithm(spinU);
         assertTrue(state.equalsNormalized(solved));
     }
@@ -408,16 +418,17 @@ public class HugeScrambleTest {
 
         for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
             final String puzzle = lazyScrambler.getKey();
-            final Puzzle scrambler = lazyScrambler.getScrambler();
+            final Puzzle<?> scrambler = lazyScrambler.getScrambler();
+            PuzzleSolutionEngine engine = scrambler.getSolutionEngine();
 
             l.info("Are " + THREE_BY_THREE_SCRAMBLE_COUNT + " " + puzzle + " more than one move away from solved?");
             startMillis = System.currentTimeMillis();
-            Puzzle.PuzzleState solved = scrambler.getSolvedState();
+            PuzzleState solved = scrambler.getSolvedState();
             for(int count = 0; count < SCRAMBLE_COUNT; count++){
                 String scramble = scrambler.generateWcaScramble(r);
                 System.out.println("Searching for solution in <= 1 move to " + scramble);
-                Puzzle.PuzzleState state = solved.applyAlgorithm(scramble);
-                String solution = state.solveIn(1);
+                PuzzleState state = solved.applyAlgorithm(scramble);
+                String solution = engine.solveIn(state, 1);
                 assertEquals(solution, null);
             }
             endMillis = System.currentTimeMillis();

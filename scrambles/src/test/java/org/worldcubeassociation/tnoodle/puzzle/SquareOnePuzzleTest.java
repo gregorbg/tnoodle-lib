@@ -1,8 +1,8 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
-import org.worldcubeassociation.tnoodle.scrambles.AlgorithmBuilder;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
-import org.worldcubeassociation.tnoodle.scrambles.Puzzle;
+import org.worldcubeassociation.tnoodle.scrambles.*;
+import org.worldcubeassociation.tnoodle.solver.TwoPhaseSquareSolver;
+import org.worldcubeassociation.tnoodle.state.SquareOneState;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,8 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class SquareOnePuzzleTest {
     @Test
     public void testMergingMode() throws InvalidMoveException {
-        Puzzle sq1 = new SquareOnePuzzle();
-        AlgorithmBuilder ab = new AlgorithmBuilder(sq1, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+        Puzzle<SquareOneState> sq1 = new SquareOnePuzzle();
+        PuzzleSolutionEngine<SquareOneState> engine = new TwoPhaseSquareSolver();
+
+        AlgorithmBuilder<SquareOneState> ab = new AlgorithmBuilder<SquareOneState>(sq1, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
 
         assertEquals(ab.getTotalCost(), 0);
 
@@ -31,18 +33,18 @@ public class SquareOnePuzzleTest {
         ab.appendMove("/");
         assertEquals(ab.getTotalCost(), 1);
 
-        Puzzle.PuzzleState state = ab.getState();
+        SquareOneState state = ab.getState();
 
-        String solution = state.solveIn(1);
+        String solution = engine.solveIn(state, 1);
         assertEquals(solution, "(-3,1)");
 
-        solution = state.solveIn(2);
+        solution = engine.solveIn(state, 2);
         assertEquals(solution, "(-3,1)");
     }
 
     @Test
     public void testSlashabilitySolutions() throws InvalidMoveException {
-        Puzzle sq1 = new SquareOnePuzzle();
+        Puzzle<SquareOneState> sq1 = new SquareOnePuzzle();
 
         // slashability is (-1,0) which then cancels into (-3,0)
         String cancelsWithSlashability = "(3,0) / (4,0)";
@@ -57,10 +59,12 @@ public class SquareOnePuzzleTest {
         assertNotNull(solution);
     }
 
-    private String solveScrambleStringIn(Puzzle puzzle, String scramble, int n) throws InvalidMoveException {
-        AlgorithmBuilder ab = new AlgorithmBuilder(puzzle, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+    private String solveScrambleStringIn(Puzzle<SquareOneState> puzzle, String scramble, int n) throws InvalidMoveException {
+        PuzzleSolutionEngine<SquareOneState> engine = new TwoPhaseSquareSolver();
+
+        AlgorithmBuilder<SquareOneState> ab = new AlgorithmBuilder<SquareOneState>(puzzle, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
         ab.appendAlgorithm(scramble);
 
-        return ab.getState().solveIn(n);
+        return engine.solveIn(ab.getState(), n);
     }
 }

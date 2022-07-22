@@ -15,15 +15,15 @@ import java.util.List;
 import org.apache.commons.math3.stat.inference.AlternativeHypothesis;
 import org.apache.commons.math3.stat.inference.BinomialTest;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
-import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
 import org.worldcubeassociation.tnoodle.scrambleanalysis.statistics.Distribution;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 public class CubeTest {
 
     private static final int edges = 12;
     private static final int corners = 8;
 
-    public static boolean testScrambles(List<CubePuzzle.CubeState> scrambles)
+    public static boolean testScrambles(List<CubeState> scrambles)
         throws RepresentationException {
 
         int N = scrambles.size();
@@ -41,7 +41,7 @@ public class CubeTest {
 
         int parity = 0;
 
-        for (CubePuzzle.CubeState cubeState : scrambles) {
+        for (CubeState cubeState : scrambles) {
             String representation = cubeState.toFaceCube();
 
             int misorientedEdges = countMisorientedEdges(representation);

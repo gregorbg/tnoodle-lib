@@ -3,6 +3,7 @@ package org.worldcubeassociation.tnoodle.scrambleanalysis;
 import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
 import org.worldcubeassociation.tnoodle.puzzle.ThreeByThreeCubePuzzle;
 import org.worldcubeassociation.tnoodle.scrambles.InvalidScrambleException;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,13 +59,13 @@ public class ScrambleProvider {
         return generateWcaScrambles(defaultCube, N);
     }
 
-    public static List<CubePuzzle.CubeState> convertToCubeStates(List<String> scrambles) throws InvalidScrambleException {
-        List<CubePuzzle.CubeState> cubeStates = new ArrayList<>(scrambles.size());
+    public static List<CubeState> convertToCubeStates(List<String> scrambles) throws InvalidScrambleException {
+        List<CubeState> cubeStates = new ArrayList<>(scrambles.size());
         CubePuzzle puzzle = new CubePuzzle(3);
 
         for (String scramble : scrambles) {
-            CubePuzzle.CubeState solved = puzzle.getSolvedState();
-            CubePuzzle.CubeState cubeState = (CubePuzzle.CubeState) solved.applyAlgorithm(scramble);
+            CubeState solved = puzzle.getSolvedState();
+            CubeState cubeState = solved.applyAlgorithm(scramble);
 
             cubeStates.add(cubeState);
         }

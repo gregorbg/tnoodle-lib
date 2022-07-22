@@ -5,16 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.worldcubeassociation.tnoodle.scrambles.Puzzle.PuzzleState;
-
-public class AlgorithmBuilder {
+public class AlgorithmBuilder<PS extends PuzzleState<PS>> {
     private static final Logger l = Logger.getLogger(AlgorithmBuilder.class.getName());
 
     private final List<String> moves = new ArrayList<>();
     /**
      * states.get(i) = state achieved by applying moves[0]...moves[i-1]
      */
-    private final List<PuzzleState> states = new ArrayList<>();
+    private final List<PS> states = new ArrayList<>();
     /**
      * If we are in CANONICALIZE_MOVES MergingMode, then something like
      * Uw Dw on a 4x4x4 will become Uw2. This means the state we end
@@ -23,20 +21,20 @@ public class AlgorithmBuilder {
      * unNormalizedState keeps track of the state we would have been in
      * if we had just naively appended turns.
      */
-    private PuzzleState originalState, unNormalizedState;
+    private PS originalState, unNormalizedState;
     private int totalCost;
     private final MergingMode mergingMode;
 
-    public AlgorithmBuilder(Puzzle puzzle, MergingMode mergingMode) {
+    public AlgorithmBuilder(Puzzle<PS> puzzle, MergingMode mergingMode) {
         this(mergingMode, puzzle.getSolvedState());
     }
 
-    public AlgorithmBuilder(MergingMode mergingMode, PuzzleState originalState) {
+    public AlgorithmBuilder(MergingMode mergingMode, PS originalState) {
         this.mergingMode = mergingMode;
         resetToState(originalState);
     }
 
-    private void resetToState(PuzzleState originalState) {
+    private void resetToState(PS originalState) {
         this.totalCost = 0;
         this.originalState = originalState;
         this.unNormalizedState = originalState;
@@ -79,7 +77,7 @@ public class AlgorithmBuilder {
         //  - "R R" becomes "R2"
         //  - "L Rw" becomes "L2"
         //  - "F x U" becomes "F2"
-        CANONICALIZE_MOVES;
+        CANONICALIZE_MOVES
     }
 
     public boolean isRedundant(String move) throws InvalidMoveException {
@@ -107,20 +105,20 @@ public class AlgorithmBuilder {
             return new IndexAndMove(moves.size(), move);
         }
 
-        PuzzleState newUnNormalizedState = unNormalizedState.apply(move);
+        PuzzleState<PS> newUnNormalizedState = unNormalizedState.apply(move);
         if(newUnNormalizedState.equalsNormalized(unNormalizedState)) {
             // move must just be a rotation.
             if(mergingMode == MergingMode.CANONICALIZE_MOVES) {
                 return new IndexAndMove(0, null);
             }
         }
-        PuzzleState newNormalizedState = newUnNormalizedState.getNormalized();
+        PS newNormalizedState = newUnNormalizedState.getNormalized();
 
-        Map<? extends PuzzleState, String> successors = getState().getCanonicalMovesByState();
+        Map<PS, String> successors = getState().getCanonicalMovesByState();
         move = null;
         // Search for the right move to do to our current state in
         // order to match up with newNormalizedState.
-        for(PuzzleState ps : successors.keySet()) {
+        for(PS ps : successors.keySet()) {
             if(ps.equalsNormalized(newNormalizedState)) {
                 move = successors.get(ps);
                 break;
@@ -133,21 +131,21 @@ public class AlgorithmBuilder {
         if(mergingMode == MergingMode.CANONICALIZE_MOVES) {
             for(int lastMoveIndex = moves.size() - 1; lastMoveIndex >= 0; lastMoveIndex--) {
                 String lastMove = moves.get(lastMoveIndex);
-                PuzzleState stateBeforeLastMove = states.get(lastMoveIndex);
+                PuzzleState<PS> stateBeforeLastMove = states.get(lastMoveIndex);
                 if(!stateBeforeLastMove.movesCommute(lastMove, move)) {
                     break;
                 }
-                PuzzleState stateAfterLastMove = states.get(lastMoveIndex+1);
-                PuzzleState stateAfterLastMoveAndNewMove = stateAfterLastMove.apply(move);
+                PS stateAfterLastMove = states.get(lastMoveIndex+1);
+                PS stateAfterLastMoveAndNewMove = stateAfterLastMove.apply(move);
 
                 if(stateBeforeLastMove.equalsNormalized(stateAfterLastMoveAndNewMove)) {
                     // move cancels with lastMove
                     return new IndexAndMove(lastMoveIndex, null);
                 } else {
                     successors = stateBeforeLastMove.getCanonicalMovesByState();
-                    for(PuzzleState ps : successors.keySet()) {
+                    for(PuzzleState<PS> ps : successors.keySet()) {
                         if(ps.equalsNormalized(stateAfterLastMoveAndNewMove)) {
-                            String alternateLastMove = successors.get(ps);
+                            String alternateLastMove = successors.get(ps.unpack());
                             // move merges with lastMove
                             return new IndexAndMove(lastMoveIndex, alternateLastMove);
                         }
@@ -228,7 +226,7 @@ public class AlgorithmBuilder {
         }
     }
 
-    public PuzzleState getState() {
+    public PS getState() {
         assert states.size() == moves.size() + 1;
         return states.get(states.size() - 1);
     }
@@ -241,8 +239,8 @@ public class AlgorithmBuilder {
         return String.join(" ", moves);
     }
 
-    public PuzzleStateAndGenerator getStateAndGenerator() {
-        return new PuzzleStateAndGenerator(getState(), toString());
+    public PuzzleStateAndGenerator<PS> getStateAndGenerator() {
+        return new PuzzleStateAndGenerator<>(getState(), toString());
     }
 
     public static String[] splitAlgorithm(String algorithm) {
@@ -251,5 +249,4 @@ public class AlgorithmBuilder {
         }
         return algorithm.split("\\s+");
     }
-
 }

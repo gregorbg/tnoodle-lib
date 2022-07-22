@@ -1,5 +1,5 @@
 package org.worldcubeassociation.tnoodle.scrambles;
 
-public interface ScrambleCacherListener {
-    public void scrambleCacheUpdated(ScrambleCacher src);
+public interface ScrambleCacherListener<PS extends PuzzleState<PS>> {
+    void scrambleCacheUpdated(ScrambleCacher<PS> src);
 }

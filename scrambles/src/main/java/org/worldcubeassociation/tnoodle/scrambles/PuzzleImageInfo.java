@@ -5,12 +5,11 @@ import org.worldcubeassociation.tnoodle.svglite.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PuzzleImageInfo {
+public class PuzzleImageInfo<PS extends PuzzleState<PS>> {
     public Map<String, Color> colorScheme;
     public Dimension size;
 
-    public PuzzleImageInfo() {}
-    public PuzzleImageInfo(Puzzle p) {
+    public PuzzleImageInfo(PuzzleSvgPainter<PS> p) {
         colorScheme = p.getDefaultColorScheme();
         size = p.getPreferredSize();
     }

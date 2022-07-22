@@ -1,8 +1,8 @@
-package org.worldcubeassociation.tnoodle.puzzle;
+package org.worldcubeassociation.tnoodle.solver;
 
 import java.util.Random;
 
-public class SkewbSolver {
+public class SkewbSolver { // TODO GB  extends PuzzleSolutionEngine<SkewbState>
 
     private static final int N_MOVES = 4;
 
@@ -12,8 +12,7 @@ public class SkewbSolver {
     private static byte[] permprun = new byte[4320];
     private static byte[] twstprun = new byte[2187];
 
-    private static final String[] move2str = { "R ", "R' ", "L ", "L' ", "D ",
-        "D' ", "B ", "B' " };
+    private static final String[] move2str = { "R ", "R' ", "L ", "L' ", "D ", "D' ", "B ", "B' " };
 
     private static final int MAX_SOLUTION_LENGTH = 12;
 
@@ -24,8 +23,7 @@ public class SkewbSolver {
         { 0, 8, 11, 3 }, { 7, 9, 2, 4 }, { 4, 2, 9, 7 }, { 11, 3, 0, 8 },
         { 1, 10, 5, 6 }, { 8, 0, 3, 11 }, { 2, 4, 7, 9 }, { 5, 6, 1, 10 } };
 
-    private static final byte[] ori = new byte[] { 0, 1, 2, 0, 2, 1, 1, 2, 0,
-        2, 1, 0 };
+    private static final byte[] ori = new byte[] { 0, 1, 2, 0, 2, 1, 1, 2, 0, 2, 1, 0 };
 
     private static int getpermmv(int idx, int move) {
         int centerindex = idx / 12;

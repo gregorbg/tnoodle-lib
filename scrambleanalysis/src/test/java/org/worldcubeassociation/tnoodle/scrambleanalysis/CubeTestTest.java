@@ -2,12 +2,12 @@ package org.worldcubeassociation.tnoodle.scrambleanalysis;
 
 import org.junit.jupiter.api.Test;
 import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class CubeTestTest {
     private final CubePuzzle randomMoveThreeByThree = new CubePuzzle(3);
@@ -21,7 +21,7 @@ public class CubeTestTest {
         int N = 20000;
 
         List<String> scrambles = randomMovesScrambles(N);
-        List<CubePuzzle.CubeState> representations = ScrambleProvider.convertToCubeStates(scrambles);
+        List<CubeState> representations = ScrambleProvider.convertToCubeStates(scrambles);
 
         assertFalse(CubeTest.testScrambles(representations));
     }

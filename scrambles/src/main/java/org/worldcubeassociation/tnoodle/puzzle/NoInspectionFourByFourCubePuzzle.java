@@ -5,22 +5,25 @@ import org.worldcubeassociation.tnoodle.scrambles.PuzzleStateAndGenerator;
 import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.scrambles.AlgorithmBuilder;
 import org.timepedia.exporter.client.Export;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 @Export
 public class NoInspectionFourByFourCubePuzzle extends FourByFourCubePuzzle {
     public NoInspectionFourByFourCubePuzzle() {
+        super();
     }
 
     @Override
-    public PuzzleStateAndGenerator generateRandomMoves(Random r) {
-        CubeMove[][] randomOrientationMoves = getRandomOrientationMoves(size - 1);
-        CubeMove[] randomOrientation = randomOrientationMoves[r.nextInt(randomOrientationMoves.length)];
-        PuzzleStateAndGenerator psag = super.generateRandomMoves(r);
-        psag = applyOrientation(this, randomOrientation, psag, true);
-        return psag;
+    public PuzzleStateAndGenerator<CubeState> generateRandomMoves(Random r) {
+        PuzzleStateAndGenerator<CubeState> psag = super.generateRandomMoves(r);
+
+        CubeState.CubeMove[][] randomOrientationMoves = psag.state.getRandomOrientationMoves(size - 1);
+        CubeState.CubeMove[] randomOrientation = randomOrientationMoves[r.nextInt(randomOrientationMoves.length)];
+
+        return applyOrientation(this, randomOrientation, psag, true);
     }
 
-    public static PuzzleStateAndGenerator applyOrientation(CubePuzzle puzzle, CubeMove[] randomOrientation, PuzzleStateAndGenerator psag, boolean discardRedundantMoves) {
+    public static PuzzleStateAndGenerator<CubeState> applyOrientation(CubePuzzle puzzle, CubeState.CubeMove[] randomOrientation, PuzzleStateAndGenerator<CubeState> psag, boolean discardRedundantMoves) {
         if(randomOrientation.length == 0) {
             // No reorientation required
             return psag;
@@ -28,9 +31,9 @@ public class NoInspectionFourByFourCubePuzzle extends FourByFourCubePuzzle {
 
         // Append reorientation to scramble.
         try {
-            AlgorithmBuilder ab = new AlgorithmBuilder(puzzle, AlgorithmBuilder.MergingMode.NO_MERGING);
+            AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<CubeState>(puzzle, AlgorithmBuilder.MergingMode.NO_MERGING);
             ab.appendAlgorithm(psag.generator);
-            for(CubeMove cm : randomOrientation) {
+            for(CubeState.CubeMove cm : randomOrientation) {
                 ab.appendMove(cm.toString());
             }
 

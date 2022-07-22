@@ -5,6 +5,7 @@ import org.worldcubeassociation.tnoodle.scrambles.PuzzleStateAndGenerator;
 import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.scrambles.AlgorithmBuilder;
 import org.timepedia.exporter.client.Export;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 @Export
 public class NoInspectionFiveByFiveCubePuzzle extends CubePuzzle {
@@ -13,15 +14,16 @@ public class NoInspectionFiveByFiveCubePuzzle extends CubePuzzle {
     }
 
     @Override
-    public PuzzleStateAndGenerator generateRandomMoves(Random r) {
-        CubeMove[][] randomOrientationMoves = getRandomOrientationMoves(size /2);
-        CubeMove[] randomOrientation = randomOrientationMoves[r.nextInt(randomOrientationMoves.length)];
-        PuzzleStateAndGenerator psag = super.generateRandomMoves(r);
-        psag = applyOrientation(this, randomOrientation, psag, true);
-        return psag;
+    public PuzzleStateAndGenerator<CubeState> generateRandomMoves(Random r) {
+        PuzzleStateAndGenerator<CubeState> psag = super.generateRandomMoves(r);
+
+        CubeState.CubeMove[][] randomOrientationMoves = psag.state.getRandomOrientationMoves(size /2);
+        CubeState.CubeMove[] randomOrientation = randomOrientationMoves[r.nextInt(randomOrientationMoves.length)];
+
+        return applyOrientation(this, randomOrientation, psag, true);
     }
 
-    public static PuzzleStateAndGenerator applyOrientation(CubePuzzle puzzle, CubeMove[] randomOrientation, PuzzleStateAndGenerator psag, boolean discardRedundantMoves) {
+    public static PuzzleStateAndGenerator<CubeState> applyOrientation(CubePuzzle puzzle, CubeState.CubeMove[] randomOrientation, PuzzleStateAndGenerator<CubeState> psag, boolean discardRedundantMoves) {
         if(randomOrientation.length == 0) {
             // No reorientation required
             return psag;
@@ -29,7 +31,7 @@ public class NoInspectionFiveByFiveCubePuzzle extends CubePuzzle {
 
         // Append reorientation to scramble.
         try {
-            AlgorithmBuilder ab = new AlgorithmBuilder(puzzle, AlgorithmBuilder.MergingMode.NO_MERGING);
+            AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<CubeState>(puzzle, AlgorithmBuilder.MergingMode.NO_MERGING);
             ab.appendAlgorithm(psag.generator);
             // Check if our reorientation is going to cancel with the last
             // turn of our scramble. If it does, then we just discard
@@ -42,12 +44,12 @@ public class NoInspectionFiveByFiveCubePuzzle extends CubePuzzle {
                 AlgorithmBuilder.IndexAndMove im = ab.findBestIndexForMove(firstReorientMove, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
                 ab.popMove(im.index);
             }
-            for(CubeMove cm : randomOrientation) {
+
+            for(CubeState.CubeMove cm : randomOrientation) {
                 ab.appendMove(cm.toString());
             }
 
-            psag = ab.getStateAndGenerator();
-            return psag;
+            return ab.getStateAndGenerator();
         } catch(InvalidMoveException e) {
             throw new RuntimeException(e);
         }

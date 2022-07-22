@@ -2,32 +2,26 @@ package org.worldcubeassociation.tnoodle.puzzle;
 
 import java.util.Random;
 
-import cs.threephase.Edge3;
-import cs.threephase.Search;
 import org.worldcubeassociation.tnoodle.scrambles.AlgorithmBuilder;
+import org.worldcubeassociation.tnoodle.scrambles.*;
 import org.worldcubeassociation.tnoodle.scrambles.AlgorithmBuilder.MergingMode;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidScrambleException;
-import org.worldcubeassociation.tnoodle.scrambles.PuzzleStateAndGenerator;
 import org.timepedia.exporter.client.Export;
+import org.worldcubeassociation.tnoodle.solver.ThreePhaseCubeSolver;
+import org.worldcubeassociation.tnoodle.state.CubeState;
 
 @Export
 public class FourByFourCubePuzzle extends CubePuzzle {
-    private final ThreadLocal<Search> threePhaseSearcher;
+    private final ThreePhaseCubeSolver threePhaseEngine;
 
     public FourByFourCubePuzzle() {
         super(4);
-        threePhaseSearcher = ThreadLocal.withInitial(Search::new);
-    }
-
-    public double getInitializationStatus() {
-        return Edge3.initStatus();
+        this.threePhaseEngine = new ThreePhaseCubeSolver();
     }
 
     @Override
-    public PuzzleStateAndGenerator generateRandomMoves(Random r) {
-        String scramble = threePhaseSearcher.get().randomState(r);
-        AlgorithmBuilder ab = new AlgorithmBuilder(this, MergingMode.CANONICALIZE_MOVES);
+    public PuzzleStateAndGenerator<CubeState> generateRandomMoves(Random r) {
+        String scramble = threePhaseEngine.generateRandomScramble(r);
+        AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<>(this, MergingMode.CANONICALIZE_MOVES);
         try {
             ab.appendAlgorithm(scramble);
         } catch (InvalidMoveException e) {
