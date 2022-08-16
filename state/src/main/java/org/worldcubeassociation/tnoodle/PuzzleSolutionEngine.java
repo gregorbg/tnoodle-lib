@@ -1,6 +1,6 @@
 package org.worldcubeassociation.tnoodle;
 
-public abstract class PuzzleSolutionEngine<PS extends PuzzleState<PS>> {
+public abstract class PuzzleSolutionEngine<PS extends PuzzleState> {
     /**
      * Returns a number between 0 and 1 representing how "initialized" this
      * Scrambler is. 0 means nothing has been accomplished, and 1 means

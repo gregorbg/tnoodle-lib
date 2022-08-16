@@ -1,6 +1,6 @@
 package org.worldcubeassociation.tnoodle.state;
 
-import org.worldcubeassociation.tnoodle.PuzzleState;
+import org.worldcubeassociation.tnoodle.AbstractPuzzleState;
 import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
 import java.util.Arrays;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class MegaminxState extends PuzzleState<MegaminxState> {
+public class MegaminxState extends AbstractPuzzleState<MegaminxState> {
     public enum Face {
         U, BL, BR, R, F, L, D, DR, DBR, B, DBL, DL;
 

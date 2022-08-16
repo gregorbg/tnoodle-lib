@@ -1,9 +1,7 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
 import org.worldcubeassociation.tnoodle.Puzzle;
-import org.worldcubeassociation.tnoodle.PuzzleSvgPainter;
 import org.worldcubeassociation.tnoodle.algorithm.PuzzleStateAndGenerator;
-import org.worldcubeassociation.tnoodle.drawing.MegaminxPainter;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.state.MegaminxState;
 import java.util.Random;
@@ -27,11 +25,6 @@ public class MegaminxPuzzle extends Puzzle<MegaminxState> {
     @Override
     public MegaminxState getSolvedState() {
         return new MegaminxState();
-    }
-
-    @Override
-    public PuzzleSvgPainter<MegaminxState> getPainter() {
-        return new MegaminxPainter();
     }
 
     @Override

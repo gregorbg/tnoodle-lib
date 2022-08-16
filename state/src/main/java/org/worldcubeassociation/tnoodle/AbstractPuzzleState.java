@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class PuzzleState {
-    public PuzzleState() {}
+public abstract class AbstractPuzzleState<PS extends AbstractPuzzleState<PS>> extends PuzzleState {
+    public AbstractPuzzleState() {}
 
     /**
      * @return A LinkedHashMap mapping move Strings to resulting PuzzleStates.
@@ -20,15 +20,17 @@ public abstract class PuzzleState {
      *         Preferred notations should appear earlier in the
      *         LinkedHashMap.
      */
-    public abstract Map<String, ? extends PuzzleState> getSuccessorsByName();
+    public abstract Map<String, PS> getSuccessorsByName();
+
+    public abstract PS unpack();
 
     /**
      * @param algorithm A space separated String of moves to apply to state
      * @return The resulting PuzzleState
      * @throws InvalidScrambleException If the scramble is invalid, for example if it uses invalid notation.
      */
-    public PuzzleState applyAlgorithm(String algorithm) throws InvalidScrambleException {
-        PuzzleState state = this;
+    public PS applyAlgorithm(String algorithm) throws InvalidScrambleException {
+        PS state = this.unpack();
         for(String move : AlgorithmBuilder.splitAlgorithm(algorithm)) {
             try {
                 state = state.apply(move);
@@ -46,8 +48,8 @@ public abstract class PuzzleState {
      * @return The PuzzleState achieved after applying move
      * @throws InvalidMoveException if the move is unrecognized.
      */
-    public PuzzleState apply(String move) throws InvalidMoveException {
-        Map<String, ? extends PuzzleState> successors = getSuccessorsByName();
+    public PS apply(String move) throws InvalidMoveException {
+        Map<String, ? extends PS> successors = getSuccessorsByName();
 
         if(!successors.containsKey(move)) {
             throw new InvalidMoveException("Unrecognized turn " + move);
@@ -62,18 +64,18 @@ public abstract class PuzzleState {
      * @return A mapping of canonical PuzzleState's to the name of
      *         the move that gets you to them.
      */
-    public Map<? extends PuzzleState, String> getCanonicalMovesByState() {
-        Map<String, ? extends PuzzleState> successorsByName = getSuccessorsByName();
-        Map<PuzzleState, String> uniqueSuccessors = new HashMap<>();
-        Set<PuzzleState> statesSeenNormalized = new HashSet<>();
+    public Map<PS, String> getCanonicalMovesByState() {
+        Map<String, PS> successorsByName = getSuccessorsByName();
+        Map<PS, String> uniqueSuccessors = new HashMap<>();
+        Set<PS> statesSeenNormalized = new HashSet<>();
 
         // We're not interested in any successor states are just a
         // rotation away.
         statesSeenNormalized.add(this.getNormalized());
 
-        for(Map.Entry<String, ? extends PuzzleState> next : successorsByName.entrySet()) {
-            PuzzleState nextState = next.getValue();
-            PuzzleState nextStateNormalized = nextState.getNormalized();
+        for(Map.Entry<String, PS> next : successorsByName.entrySet()) {
+            PS nextState = next.getValue();
+            PS nextStateNormalized = nextState.getNormalized();
             String moveName = next.getKey();
             // Only add nextState if it's "unique"
             if(!statesSeenNormalized.contains(nextStateNormalized)) {
@@ -115,10 +117,10 @@ public abstract class PuzzleState {
      * @return A HashMap mapping move Strings to resulting PuzzleStates.
      *         The move Strings may not contain spaces.
      */
-    public Map<String, ? extends PuzzleState> getScrambleSuccessors() {
-        Map<String, PuzzleState> reversed = new HashMap<>();
+    public Map<String, PS> getScrambleSuccessors() {
+        Map<String, PS> reversed = new HashMap<>();
 
-        for (Map.Entry<? extends PuzzleState, String> entry : getCanonicalMovesByState().entrySet()) {
+        for (Map.Entry<PS, String> entry : getCanonicalMovesByState().entrySet()) {
             reversed.put(entry.getValue(), entry.getKey());
         }
 
@@ -148,59 +150,7 @@ public abstract class PuzzleState {
      *        we can just do an alphabetical sort of these and return the
      *        min or max.
      */
-    public PuzzleState getNormalized() {
-        return this;
-    }
-
-    public boolean isNormalized() {
-        return this.equals(getNormalized());
-    }
-
-    /**
-     * Most puzzles are happy to split an algorithm by turns, and declare
-     * each turn a move. However, this simple model doesn't work for all
-     * puzzles. For example, square one may wish to declare (3,3) as 1
-     * move. Another possible use for this would be rotations, which
-     * count as 0 moves.
-     * @param move The move for which to compute costs
-     * @return The cost of doing this move.
-     */
-    public int getMoveCost(String move) {
-        return 1;
-    }
-
-    /**
-     * Returns true if this state is equal to other.
-     * Note that a puzzle like 4x4 must compare all orientations of the puzzle, otherwise
-     * generateRandomMoves() will allow for trivial sequences of turns like Lw Rw'.
-     * @param other The other object to check for equality
-     * @return true if this is equal to other
-     */
-    public abstract boolean equals(Object other);
-
-    public abstract int hashCode();
-
-    public boolean equalsNormalized(PuzzleState other) {
-        return getNormalized().equals(other.getNormalized());
-    }
-
-    /**
-     * Two moves A and B commute on a puzzle if regardless of
-     * the order you apply A and B, you end up in the same state.
-     * Interestingly enough, the set of moves that commute can change
-     * with the state a puzzle is in. That's why this is a method of
-     * PuzzleState instead of Puzzle.
-     * @param move1 The first move
-     * @param move2 The second move
-     * @return True iff move1 and move2 commute.
-     */
-    public boolean movesCommute(String move1, String move2) {
-        try {
-            PuzzleState state1 = apply(move1).apply(move2);
-            PuzzleState state2 = apply(move2).apply(move1);
-            return state1.equals(state2);
-        } catch (InvalidMoveException e) {
-            return false;
-        }
+    public PS getNormalized() {
+        return this.unpack();
     }
 }

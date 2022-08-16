@@ -7,7 +7,7 @@ import java.util.Map;
 
 import static java.lang.Math.ceil;
 
-public abstract class PuzzleSvgPainter<PS extends PuzzleState<PS>> {
+public abstract class PuzzleSvgPainter<PS extends PuzzleState> {
     /**
      * Draws the state of the puzzle.
      * NOTE: It is assumed that this method is thread safe! That means unless you know what you're doing,
@@ -28,6 +28,10 @@ public abstract class PuzzleSvgPainter<PS extends PuzzleState<PS>> {
      * @return An SVG object representing the drawn scramble.
      */
     public Svg drawScramble(PS state, Map<String, Color> colorScheme) {
+        if (colorScheme == null) {
+            return drawScramble(state, getDefaultColorScheme());
+        }
+
         Svg svg = new Svg(getPreferredSize());
 
         drawScramble(svg, state, colorScheme);

@@ -1,12 +1,12 @@
 package org.worldcubeassociation.tnoodle.state;
 
 import cs.sq12phase.FullCube;
-import org.worldcubeassociation.tnoodle.PuzzleState;
+import org.worldcubeassociation.tnoodle.AbstractPuzzleState;
 import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
 import java.util.*;
 
-public class SquareOneState extends PuzzleState<SquareOneState> {
+public class SquareOneState extends AbstractPuzzleState<SquareOneState> {
     static HashMap<String, Integer> wcaCostsByMove = new HashMap<>();
     public static Map<String, Integer> slashabilityCostsByMove = new HashMap<>();
     static {

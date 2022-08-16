@@ -1,12 +1,12 @@
 package org.worldcubeassociation.tnoodle.state;
 
-import org.worldcubeassociation.tnoodle.PuzzleState;
+import org.worldcubeassociation.tnoodle.AbstractPuzzleState;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ClockState extends PuzzleState<ClockState> {
+public class ClockState extends AbstractPuzzleState<ClockState> {
     public static final String[] TURNS = {"UR","DR","DL","UL","U","R","D","L","ALL"};
     private static final int[][] moves = {
         {0,1,1,0,1,1,0,0,0,  -1, 0, 0, 0, 0, 0, 0, 0, 0},// UR

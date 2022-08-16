@@ -1,6 +1,7 @@
-package org.worldcubeassociation.tnoodle.scrambles;
+package org.worldcubeassociation.tnoodle.cache;
 
 import org.worldcubeassociation.tnoodle.Puzzle;
+import org.worldcubeassociation.tnoodle.PuzzleState;
 
 import java.security.SecureRandom;
 import java.util.LinkedList;
@@ -26,13 +27,13 @@ public class ScrambleCacher {
     private volatile int startBuf = 0;
     private volatile int available = 0;
 
-    public ScrambleCacher(final Puzzle<?> puzzle) {
+    public ScrambleCacher(final Puzzle<? extends PuzzleState> puzzle) {
         this(puzzle, DEFAULT_CACHE_SIZE);
     }
 
     private volatile Throwable exception;
     private boolean running = false;
-    public ScrambleCacher(final Puzzle<?> puzzle, int cacheSize) {
+    public ScrambleCacher(final Puzzle<? extends PuzzleState> puzzle, int cacheSize) {
         assert cacheSize > 0;
         scrambles = new String[cacheSize];
         Thread t = new Thread(() -> {
@@ -43,7 +44,7 @@ public class ScrambleCacher {
                 // any scrambles.
             }
             for(;;) {
-                String scramble = puzzle.generateWcaScramble(r);
+                String scramble = puzzle.generateScramble(r);
                 fireScrambleGenerated(scramble);
 
                 synchronized(scrambles) {

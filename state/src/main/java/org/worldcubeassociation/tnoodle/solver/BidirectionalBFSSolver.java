@@ -1,5 +1,6 @@
 package org.worldcubeassociation.tnoodle.solver;
 
+import org.worldcubeassociation.tnoodle.AbstractPuzzleState;
 import org.worldcubeassociation.tnoodle.PuzzleSolutionEngine;
 import org.worldcubeassociation.tnoodle.PuzzleState;
 import org.worldcubeassociation.tnoodle.algorithm.AlgorithmBuilder;
@@ -9,7 +10,7 @@ import org.worldcubeassociation.tnoodle.util.SortedBuckets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BidirectionalBFSSolver<PS extends PuzzleState<PS>> extends PuzzleSolutionEngine<PS> {
+public class BidirectionalBFSSolver<PS extends AbstractPuzzleState<PS>> extends PuzzleSolutionEngine<PS> {
     private final PS solvedState;
 
     public BidirectionalBFSSolver(PS solvedState) {
@@ -151,7 +152,7 @@ public class BidirectionalBFSSolver<PS extends PuzzleState<PS>> extends PuzzleSo
         int distanceFromScrambled = seenScrambled.get(lookupState);
 
         // We have to keep track of all states we have visited
-        PuzzleState<PS>[] linkedStates = new PuzzleState[distanceFromScrambled + 1];
+        PuzzleState[] linkedStates = new PuzzleState[distanceFromScrambled + 1];
         linkedStates[distanceFromScrambled] = lookupState;
 
         outer:

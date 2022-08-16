@@ -3,7 +3,6 @@ package org.worldcubeassociation.tnoodle.scrambleanalysis;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
-import org.worldcubeassociation.tnoodle.puzzle.ThreeByThreeCubePuzzle;
 
 public class ScrambleProviderTest {
     @Test

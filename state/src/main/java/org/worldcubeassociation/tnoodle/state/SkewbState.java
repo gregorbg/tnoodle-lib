@@ -1,13 +1,13 @@
 package org.worldcubeassociation.tnoodle.state;
 
-import org.worldcubeassociation.tnoodle.PuzzleState;
+import org.worldcubeassociation.tnoodle.AbstractPuzzleState;
 import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SkewbState extends PuzzleState<SkewbState> {
+public class SkewbState extends AbstractPuzzleState<SkewbState> {
 
     /**
      *           +---------+

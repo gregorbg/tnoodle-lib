@@ -1,12 +1,12 @@
 package org.worldcubeassociation.tnoodle.state;
 
-import org.worldcubeassociation.tnoodle.PuzzleState;
+import org.worldcubeassociation.tnoodle.AbstractPuzzleState;
 import org.worldcubeassociation.tnoodle.solver.TwoByTwoSolver;
 import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
 import java.util.*;
 
-public class CubeState extends PuzzleState<CubeState> {
+public class CubeState extends AbstractPuzzleState<CubeState> {
     public enum Face {
         R, U, F, L, D, B;
 
@@ -226,7 +226,7 @@ public class CubeState extends PuzzleState<CubeState> {
     }
 
     @Override
-    public LinkedHashMap<String, CubeState> getSuccessorsByName() {
+    public Map<String, CubeState> getSuccessorsByName() {
         return getSuccessorsWithinSlice(size - 1, true);
     }
 
@@ -236,7 +236,7 @@ public class CubeState extends PuzzleState<CubeState> {
     }
 
     @Override
-    public HashMap<String, CubeState> getScrambleSuccessors() {
+    public Map<String, CubeState> getScrambleSuccessors() {
         return getSuccessorsWithinSlice((size / 2) - 1, false);
     }
 
@@ -251,8 +251,8 @@ public class CubeState extends PuzzleState<CubeState> {
         return reversed;
     }
 
-    private LinkedHashMap<String, CubeState> getSuccessorsWithinSlice(int maxSlice, boolean includeRedundant) {
-        LinkedHashMap<String, CubeState> successors = new LinkedHashMap<>();
+    private Map<String, CubeState> getSuccessorsWithinSlice(int maxSlice, boolean includeRedundant) {
+        Map<String, CubeState> successors = new LinkedHashMap<>();
         for(int innerSlice = 0; innerSlice <= maxSlice; innerSlice++) {
             for(Face face : Face.values()) {
                 boolean halfOfEvenCube = size % 2 == 0 && (innerSlice == (size / 2) - 1);

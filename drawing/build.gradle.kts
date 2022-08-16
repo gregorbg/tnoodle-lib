@@ -13,6 +13,7 @@ plugins {
     checkstyle
     `maven-publish`
     signing
+    alias(libs.plugins.shadow)
 }
 
 configureJava()
@@ -22,6 +23,7 @@ configureSignatures(publishing)
 
 dependencies {
     implementation(project(":state"))
+    implementation(project(":wca-events"))
 }
 
 //configureJUnit5()

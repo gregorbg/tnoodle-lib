@@ -1,5 +1,6 @@
 package org.worldcubeassociation.tnoodle.algorithm;
 
+import org.worldcubeassociation.tnoodle.AbstractPuzzleState;
 import org.worldcubeassociation.tnoodle.PuzzleState;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
 
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class AlgorithmBuilder<PS extends PuzzleState<PS>> {
+public class AlgorithmBuilder<PS extends AbstractPuzzleState<PS>> {
     private static final Logger l = Logger.getLogger(AlgorithmBuilder.class.getName());
 
     private final List<String> moves = new ArrayList<>();
@@ -104,20 +105,20 @@ public class AlgorithmBuilder<PS extends PuzzleState<PS>> {
             return new IndexAndMove(moves.size(), move);
         }
 
-        PuzzleState<PS> newUnNormalizedState = unNormalizedState.apply(move);
+        PuzzleState newUnNormalizedState = unNormalizedState.apply(move);
         if(newUnNormalizedState.equalsNormalized(unNormalizedState)) {
             // move must just be a rotation.
             if(mergingMode == MergingMode.CANONICALIZE_MOVES) {
                 return new IndexAndMove(0, null);
             }
         }
-        PS newNormalizedState = newUnNormalizedState.getNormalized();
+        PuzzleState newNormalizedState = newUnNormalizedState.getNormalized();
 
-        Map<PS, String> successors = getState().getCanonicalMovesByState();
+        Map<? extends PuzzleState, String> successors = getState().getCanonicalMovesByState();
         move = null;
         // Search for the right move to do to our current state in
         // order to match up with newNormalizedState.
-        for(PS ps : successors.keySet()) {
+        for(PuzzleState ps : successors.keySet()) {
             if(ps.equalsNormalized(newNormalizedState)) {
                 move = successors.get(ps);
                 break;
@@ -130,21 +131,21 @@ public class AlgorithmBuilder<PS extends PuzzleState<PS>> {
         if(mergingMode == MergingMode.CANONICALIZE_MOVES) {
             for(int lastMoveIndex = moves.size() - 1; lastMoveIndex >= 0; lastMoveIndex--) {
                 String lastMove = moves.get(lastMoveIndex);
-                PuzzleState<PS> stateBeforeLastMove = states.get(lastMoveIndex);
+                PuzzleState stateBeforeLastMove = states.get(lastMoveIndex);
                 if(!stateBeforeLastMove.movesCommute(lastMove, move)) {
                     break;
                 }
-                PS stateAfterLastMove = states.get(lastMoveIndex+1);
-                PS stateAfterLastMoveAndNewMove = stateAfterLastMove.apply(move);
+                PuzzleState stateAfterLastMove = states.get(lastMoveIndex+1);
+                PuzzleState stateAfterLastMoveAndNewMove = stateAfterLastMove.apply(move);
 
                 if(stateBeforeLastMove.equalsNormalized(stateAfterLastMoveAndNewMove)) {
                     // move cancels with lastMove
                     return new IndexAndMove(lastMoveIndex, null);
                 } else {
                     successors = stateBeforeLastMove.getCanonicalMovesByState();
-                    for(PuzzleState<PS> ps : successors.keySet()) {
+                    for(PuzzleState ps : successors.keySet()) {
                         if(ps.equalsNormalized(stateAfterLastMoveAndNewMove)) {
-                            String alternateLastMove = successors.get(ps.unpack());
+                            String alternateLastMove = successors.get(ps);
                             // move merges with lastMove
                             return new IndexAndMove(lastMoveIndex, alternateLastMove);
                         }

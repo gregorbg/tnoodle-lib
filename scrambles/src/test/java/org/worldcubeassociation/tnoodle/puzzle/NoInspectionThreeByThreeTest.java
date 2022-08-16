@@ -2,9 +2,9 @@ package org.worldcubeassociation.tnoodle.puzzle;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.worldcubeassociation.tnoodle.Puzzle;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
+import org.worldcubeassociation.tnoodle.scrambles.WcaScrambler;
 import org.worldcubeassociation.tnoodle.solver.TwoPhaseCubeSolver;
 import org.worldcubeassociation.tnoodle.state.CubeState;
 
@@ -82,10 +82,10 @@ public class NoInspectionThreeByThreeTest {
 
         assertTrue(solved.equalsNormalized(scrambled.applyAlgorithm(solution)));
 
-        Random r = Puzzle.getSecureRandom();
+        Random r = WcaScrambler.getSecureRandom();
 
         for (int i = 0; i < 10; i++) {
-            System.out.println(threes.generateWcaScramble(r));
+            System.out.println(threes.generateScramble(r));
         }
     }
 

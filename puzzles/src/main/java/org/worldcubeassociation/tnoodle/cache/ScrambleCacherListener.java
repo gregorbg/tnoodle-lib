@@ -1,4 +1,4 @@
-package org.worldcubeassociation.tnoodle.scrambles;
+package org.worldcubeassociation.tnoodle.cache;
 
 public interface ScrambleCacherListener {
     void scrambleCacheUpdated(ScrambleCacher src);

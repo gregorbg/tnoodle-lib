@@ -1,8 +1,6 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
 import org.worldcubeassociation.tnoodle.Puzzle;
-import org.worldcubeassociation.tnoodle.PuzzleSvgPainter;
-import org.worldcubeassociation.tnoodle.drawing.CubePainter;
 import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import org.timepedia.exporter.client.Export;
@@ -31,11 +29,6 @@ public class CubePuzzle extends Puzzle<CubeState> {
     @Override
     public CubeState getSolvedState() {
         return new CubeState(size);
-    }
-
-    @Override
-    public PuzzleSvgPainter<CubeState> getPainter() {
-        return new CubePainter(size);
     }
 
     @Override

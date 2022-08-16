@@ -2,15 +2,18 @@ package org.worldcubeassociation.tnoodle.scrambleanalysis;
 
 import org.junit.jupiter.api.Test;
 import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
+import org.worldcubeassociation.tnoodle.scrambles.WcaScrambler;
 import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class CubeTestTest {
-    private final CubePuzzle randomMoveThreeByThree = new CubePuzzle(3);
+    private static final CubePuzzle randomMoveThreeByThree = new CubePuzzle(3);
+    private static final Random secureRandom = WcaScrambler.getSecureRandom();
 
     @Test
     public void test() throws Exception {
@@ -35,6 +38,6 @@ public class CubeTestTest {
     }
 
     private String randomMovesScramble() {
-        return randomMoveThreeByThree.generateScramble();
+        return randomMoveThreeByThree.generateScramble(secureRandom);
     }
 }

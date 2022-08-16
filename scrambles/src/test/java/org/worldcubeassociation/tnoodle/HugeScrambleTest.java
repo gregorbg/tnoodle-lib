@@ -2,14 +2,15 @@ package org.worldcubeassociation.tnoodle;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.worldcubeassociation.tnoodle.algorithm.AlgorithmBuilder;
+import org.worldcubeassociation.tnoodle.cache.ScrambleCacher;
+import org.worldcubeassociation.tnoodle.cache.ScrambleCacherListener;
+import org.worldcubeassociation.tnoodle.cache.ScrambleCacherListenerImpl;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.scrambles.*;
@@ -24,15 +25,14 @@ import org.worldcubeassociation.tnoodle.puzzle.MegaminxPuzzle;
 import org.worldcubeassociation.tnoodle.solver.TwoByTwoSolver;
 import org.worldcubeassociation.tnoodle.solver.TwoByTwoSolver.TwoByTwoState;
 import org.junit.jupiter.api.Test;
-import org.timepedia.exporter.client.Export;
-import org.timepedia.exporter.client.Exportable;
 import org.worldcubeassociation.tnoodle.state.*;
+import org.worldcubeassociation.tnoodle.svglite.Svg;
 import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
 public class HugeScrambleTest {
     private static final Logger l = Logger.getLogger(HugeScrambleTest.class.getName());
 
-    private static final Random r = Puzzle.getSecureRandom();
+    private static final Random r = WcaScrambler.getSecureRandom();
 
     static class LockHolder extends Thread {
         public LockHolder() {
@@ -64,7 +64,7 @@ public class HugeScrambleTest {
                     while(o == locked) {
                         try {
                             wait();
-                        } catch (InterruptedException e) {}
+                        } catch (InterruptedException ignored) {}
                     }
                 }
             }
@@ -77,53 +77,48 @@ public class HugeScrambleTest {
 
         int SCRAMBLE_COUNT = 10;
 
-        for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
-            System.out.println("Testing " + lazyScrambler.getDescription());
+        for(WcaEvent event : WcaEvent.values()) {
+            WcaScrambler<? extends PuzzleState> scrambler = WcaScrambler.getForEvent(event);
 
-            final Puzzle scrambler = lazyScrambler.getScrambler();
+            System.out.println("Testing " + scrambler.getDescription());
+
             for(int count = 0; count < SCRAMBLE_COUNT; count++){
-                String scramble = scrambler.generateWcaScramble(r);
+                String scramble = scrambler.generateScramble();
                 System.out.println("Filtering for scramble " + scramble);
 
-                PuzzleState state = scrambler.getSolvedState().applyAlgorithm(scramble);
-                PuzzleSolutionEngine solver = scrambler.getSolutionEngine();
-
-                assertSame(solver.solveIn(state, scrambler.getWcaMinScrambleDistance() - 1), null);
+                assertSame(scrambler.solveIn(scramble, scrambler.getMinScrambleDistance() - 1), null);
             }
         }
     }
 
     @Test
-    public void testSolveIn() throws InvalidScrambleException {
+    public void testSolveIn() throws InvalidScrambleException, InvalidMoveException {
         int SCRAMBLE_COUNT = 10;
         int SCRAMBLE_LENGTH = 4;
 
-        for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
-            final String puzzle = lazyScrambler.getKey();
-            final Puzzle<?> scrambler = lazyScrambler.getScrambler();
+        for(WcaEvent event : WcaEvent.values()) {
+            WcaScrambler<? extends PuzzleState> scrambler = WcaScrambler.getForEvent(event);
 
-            System.out.println("Testing " + puzzle);
-
-            PuzzleSolutionEngine engine = scrambler.getSolutionEngine();
+            System.out.println("Testing " + scrambler.getDescription());
 
             // Test solving the solved state
-            String solution = engine.solveIn(scrambler.getSolvedState(), 0);
+            String solution = scrambler.solveIn(null, 0);
             assertEquals("", solution);
 
             for(int count = 0; count < SCRAMBLE_COUNT; count++) {
                 System.out.print("Scramble ["+(count+1)+"/"+SCRAMBLE_COUNT+"]: ");
-                PuzzleState state = scrambler.getSolvedState();
+                AlgorithmBuilder<? extends PuzzleState> ab = scrambler.startAlgorithmBuilder(AlgorithmBuilder.MergingMode.NO_MERGING);
                 for(int i = 0; i < SCRAMBLE_LENGTH; i++){
-                    Map<String, ? extends PuzzleState> successors = state.getSuccessorsByName();
+                    Map<String, ? extends PuzzleState> successors = ab.getState().getSuccessorsByName();
                     String move = ArrayUtils.choose(r, successors.keySet());
                     System.out.print(" "+move);
-                    state = successors.get(move);
+                    ab.appendMove(move);
                 }
                 System.out.print("...");
-                solution = engine.solveIn(state, SCRAMBLE_LENGTH);
-                assertNotNull(solution, "Puzzle "+scrambler.getShortName()+" solveIn method failed!");
+                solution = scrambler.solveIn(ab.getStateAndGenerator().generator, SCRAMBLE_LENGTH);
+                assertNotNull(solution, "Puzzle "+scrambler.getKey()+" solveIn method failed!");
                 System.out.println("Found: "+solution);
-                state = state.applyAlgorithm(solution);
+                PuzzleState state = ab.getStateAndGenerator().state.applyAlgorithm(solution);
                 assertTrue(scrambler.getSolvedState().equalsNormalized(state), "Solution was not correct");
             }
         }
@@ -136,28 +131,29 @@ public class HugeScrambleTest {
         int SCRAMBLE_COUNT = 10;
         final boolean drawScramble = true;
 
-        for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
-            final String puzzle = lazyScrambler.getKey();
-            final Puzzle<?> scrambler = lazyScrambler.getScrambler();
+        for(WcaEvent event : WcaEvent.values()) {
+            final WcaScrambler<? extends PuzzleState> scrambler = WcaScrambler.getForEvent(event);
 
-            System.out.println("Testing " + puzzle);
+            System.out.println("Testing " + scrambler.getDescription());
 
             // It's easy to get this wrong (read about Arrays.hashCode vs Arrays.deepHashCode).
             // This is just a sanity check.
             assertEquals(scrambler.getSolvedState().hashCode(), scrambler.getSolvedState().hashCode());
 
             // Generating a scramble
-            System.out.println("Generating a " + puzzle + " scramble");
+            System.out.println("Generating a " + scrambler.getDescription() + " scramble");
             String scramble;
             lh.setObjectToLock(scrambler);
             scramble = scrambler.generateScramble();
 
             // Drawing that scramble
             System.out.println("Drawing " + scramble);
-            scrambler.drawScramble(scramble, null);
+            Svg scrambledSvg = scrambler.drawScramble(scramble, null);
+            assertNotNull(scrambledSvg);
 
             // Scramblers should support "null" as the empty scramble
-            scrambler.drawScramble(null, null);
+            Svg solvedSvg = scrambler.drawScramble(null, null);
+            assertNotNull(solvedSvg);
 
             System.out.println("Generating & drawing 2 sets of " + SCRAMBLE_COUNT + " scrambles simultaneously." +
                                 " This is meant to shake out threading problems in scramblers.");
@@ -188,10 +184,10 @@ public class HugeScrambleTest {
                     }
                 }
             };
-            ScrambleCacher c1 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT);
+            ScrambleCacher c1 = scrambler.startCache(SCRAMBLE_COUNT);
             c1.addCacheListener(cacherStopper);
             c1.addCacheListener(cachedScrambleDrawer);
-            ScrambleCacher c2 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT);
+            ScrambleCacher c2 = scrambler.startCache(SCRAMBLE_COUNT);
             c2.addCacheListener(cacherStopper);
             c2.addCacheListener(cachedScrambleDrawer);
             while(c1.isRunning() || c2.isRunning()) {
@@ -206,30 +202,6 @@ public class HugeScrambleTest {
         }
         lh.setObjectToLock(null);
         System.out.println("\nTest passed!");
-    }
-
-    @Test
-    public void testNames() {
-        // Check that the names by which the scramblers refer to themselves
-        // is the same as the names by which we refer to them in the plugin definitions file.
-        for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
-            String shortName = lazyScrambler.getKey();
-            Puzzle scrambler = lazyScrambler.getScrambler();
-
-            assertEquals(shortName, scrambler.getShortName());
-
-            System.out.println(Exportable.class + " isAssignableFrom " + scrambler.getClass());
-            assertTrue(Exportable.class.isAssignableFrom(scrambler.getClass()));
-            Annotation[] annotations = scrambler.getClass().getAnnotations();
-            boolean foundExport = false;
-            for(Annotation annotation : annotations) {
-                if(Export.class.isAssignableFrom(annotation.annotationType())) {
-                    foundExport = true;
-                    break;
-                }
-            }
-            assertTrue(foundExport);
-        }
     }
 
     @Test
@@ -430,27 +402,23 @@ public class HugeScrambleTest {
         for(int i = 0; i < THREE_BY_THREE_SCRAMBLE_COUNT; i++){
             threeSolver.solution(cs.min2phase.Tools.randomCube(r), THREE_BY_THREE_MAX_SCRAMBLE_LENGTH, THREE_BY_THREE_TIMEOUT, THREE_BY_THREE_TIMEMIN, cs.min2phase.Search.INVERSE_SOLUTION);
         }
+
         long endMillis = System.currentTimeMillis();
         l.info("Finished after " + (endMillis - startMillis) + "ms");
-
 
         // How long does it takes to test if a puzzle is solvable in <= 1 move?
         int SCRAMBLE_COUNT = 100;
 
-        for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
-            final String puzzle = lazyScrambler.getKey();
-            final Puzzle<?> scrambler = lazyScrambler.getScrambler();
-            PuzzleSolutionEngine engine = scrambler.getSolutionEngine();
+        for(WcaEvent event : WcaEvent.values()) {
+            final WcaScrambler<? extends PuzzleState> scrambler = WcaScrambler.getForEvent(event);
 
-            l.info("Are " + THREE_BY_THREE_SCRAMBLE_COUNT + " " + puzzle + " more than one move away from solved?");
+            l.info("Are " + THREE_BY_THREE_SCRAMBLE_COUNT + " " + scrambler.getDescription() + " more than one move away from solved?");
             startMillis = System.currentTimeMillis();
-            PuzzleState solved = scrambler.getSolvedState();
             for(int count = 0; count < SCRAMBLE_COUNT; count++){
-                String scramble = scrambler.generateWcaScramble(r);
+                String scramble = scrambler.generateScramble();
                 System.out.println("Searching for solution in <= 1 move to " + scramble);
-                PuzzleState state = solved.applyAlgorithm(scramble);
-                String solution = engine.solveIn(state, 1);
-                assertEquals(solution, null);
+                String solution = scrambler.solveIn(scramble, 1);
+                assertNull(solution);
             }
             endMillis = System.currentTimeMillis();
             l.info("Finished after " + (endMillis - startMillis) + "ms");

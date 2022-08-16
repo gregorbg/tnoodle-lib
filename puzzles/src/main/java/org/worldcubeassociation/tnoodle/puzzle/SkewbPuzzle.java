@@ -1,9 +1,7 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
 import org.worldcubeassociation.tnoodle.Puzzle;
-import org.worldcubeassociation.tnoodle.PuzzleSvgPainter;
 import org.worldcubeassociation.tnoodle.algorithm.PuzzleStateAndGenerator;
-import org.worldcubeassociation.tnoodle.drawing.SkewbPainter;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.solver.SkewbSolver;
 import org.worldcubeassociation.tnoodle.state.SkewbState;
@@ -51,11 +49,6 @@ public class SkewbPuzzle extends Puzzle<SkewbState> {
     @Override
     public SkewbState getSolvedState() {
         return new SkewbState();
-    }
-
-    @Override
-    public PuzzleSvgPainter<SkewbState> getPainter() {
-        return new SkewbPainter();
     }
 
     @Override

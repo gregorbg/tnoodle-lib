@@ -1,8 +1,8 @@
 package org.worldcubeassociation.tnoodle.scrambleanalysis;
 
-import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
-import org.worldcubeassociation.tnoodle.puzzle.ThreeByThreeCubePuzzle;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidScrambleException;
+import org.worldcubeassociation.tnoodle.PuzzleState;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
+import org.worldcubeassociation.tnoodle.scrambles.WcaScrambler;
 import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import java.io.File;
@@ -18,9 +18,8 @@ public class ScrambleProvider {
 
         // Read scrambles
         File file = new File(fileName);
-        Scanner input = new Scanner(file);
 
-        try {
+        try (Scanner input = new Scanner(file)) {
             while (input.hasNextLine()) {
                 String scramble = input.nextLine().trim();
                 if (scramble.length() > 0) {
@@ -29,15 +28,13 @@ public class ScrambleProvider {
             }
         } catch (Exception e) {
             throw new IOException("There was an error reading the file.");
-        } finally {
-            input.close();
         }
 
         return scrambles;
     }
 
     // This is the main test
-    public static List<String> generateWcaScrambles(CubePuzzle cube, int N) {
+    public static List<String> generateWcaScrambles(WcaScrambler<? extends PuzzleState> cube, int N) {
         List<String> scrambles = new ArrayList<>(N);
 
         for (int i = 0; i < N; i++) {
@@ -53,7 +50,7 @@ public class ScrambleProvider {
         return scrambles;
     }
 
-    static CubePuzzle defaultCube = new ThreeByThreeCubePuzzle();
+    static WcaScrambler<CubeState> defaultCube = WcaScrambler.THREE;
 
     public static List<String> generateWcaScrambles(int N) {
         return generateWcaScrambles(defaultCube, N);
@@ -61,11 +58,9 @@ public class ScrambleProvider {
 
     public static List<CubeState> convertToCubeStates(List<String> scrambles) throws InvalidScrambleException {
         List<CubeState> cubeStates = new ArrayList<>(scrambles.size());
-        CubePuzzle puzzle = new CubePuzzle(3);
 
         for (String scramble : scrambles) {
-            CubeState solved = puzzle.getSolvedState();
-            CubeState cubeState = solved.applyAlgorithm(scramble);
+            CubeState cubeState = defaultCube.getPuzzleState(scramble);
 
             cubeStates.add(cubeState);
         }

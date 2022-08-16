@@ -2,9 +2,7 @@ package org.worldcubeassociation.tnoodle.puzzle;
 
 import org.worldcubeassociation.tnoodle.Puzzle;
 import org.worldcubeassociation.tnoodle.PuzzleSolutionEngine;
-import org.worldcubeassociation.tnoodle.PuzzleSvgPainter;
 import org.worldcubeassociation.tnoodle.algorithm.PuzzleStateAndGenerator;
-import org.worldcubeassociation.tnoodle.drawing.SquareOnePainter;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.solver.TwoPhaseSquareSolver;
 import org.worldcubeassociation.tnoodle.state.SquareOneState;
@@ -52,11 +50,6 @@ public class SquareOnePuzzle extends Puzzle<SquareOneState> {
     @Override
     public SquareOneState getSolvedState() {
         return new SquareOneState();
-    }
-
-    @Override
-    public PuzzleSvgPainter<SquareOneState> getPainter() {
-        return new SquareOnePainter();
     }
 
     @Override

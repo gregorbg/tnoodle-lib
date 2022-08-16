@@ -14,13 +14,16 @@ plugins {
 configureJava()
 
 dependencies {
-    implementation(project(":puzzles"))
+    implementation(project(":scrambles"))
+    implementation(project(":state"))
     implementation(project(":min2phase"))
     implementation(libs.apache.commons.math3)
+
+    testImplementation(project(":puzzles"))
 }
 
 configureJUnit5()
 
 application {
-    mainClass.set("org.thewca.scrambleanalysis.App")
+    mainClass.set("org.worldcubeassociation.tnoodle.scrambleanalysis.App")
 }

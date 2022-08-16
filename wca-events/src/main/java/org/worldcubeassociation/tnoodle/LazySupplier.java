@@ -1,8 +1,8 @@
-package org.worldcubeassociation.tnoodle.scrambles;
+package org.worldcubeassociation.tnoodle;
 
 import java.lang.reflect.Constructor;
 
-class LazySupplier<T> {
+public class LazySupplier<T> {
     private T instance;
 
     public Class<T> supplyingClass;

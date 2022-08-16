@@ -5,7 +5,7 @@ import org.worldcubeassociation.tnoodle.svglite.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PuzzleImageInfo<PS extends PuzzleState<PS>> {
+public class PuzzleImageInfo<PS extends PuzzleState> {
     public Map<String, Color> colorScheme;
     public Dimension size;
 

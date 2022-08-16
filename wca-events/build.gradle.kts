@@ -1,12 +1,11 @@
 import configurations.Languages.attachRemoteRepositories
 import configurations.Languages.configureJava
 import configurations.Frameworks.configureCheckstyle
+import configurations.Frameworks.configureJUnit5
 import configurations.Publications.configureMavenPublication
 import configurations.Publications.configureSignatures
 
-description = "Puzzle definitions for Java scrambles"
-
-attachRemoteRepositories()
+description = "Data for ensuring we always have scrambles for all WCA events."
 
 plugins {
     `java-library`
@@ -15,13 +14,9 @@ plugins {
     signing
 }
 
+attachRemoteRepositories()
+
 configureJava()
 configureCheckstyle()
-configureMavenPublication("data-puzzles")
+configureMavenPublication("data-wca")
 configureSignatures(publishing)
-
-dependencies {
-    api(project(":state"))
-
-    api(libs.gwt.exporter)
-}

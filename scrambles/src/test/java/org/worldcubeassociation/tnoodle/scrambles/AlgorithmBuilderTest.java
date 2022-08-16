@@ -1,6 +1,7 @@
 package org.worldcubeassociation.tnoodle.scrambles;
 
-import org.worldcubeassociation.tnoodle.Puzzle;
+import org.worldcubeassociation.tnoodle.PuzzleState;
+import org.worldcubeassociation.tnoodle.WcaEvent;
 import org.worldcubeassociation.tnoodle.algorithm.AlgorithmBuilder;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
@@ -24,14 +25,13 @@ public class AlgorithmBuilderTest {
         assertFalse(moves.contains("3Lw"));
         assertFalse(moves.contains("3Dw"));
 
-        for (PuzzleRegistry lazyEntry : PuzzleRegistry.values()) {
-            String puzzle = lazyEntry.getKey();
-            Puzzle<?> scrambler = lazyEntry.getScrambler();
+        for (WcaEvent event : WcaEvent.values()) {
+            WcaScrambler<? extends PuzzleState> scrambler = WcaScrambler.getForEvent(event);
 
-            System.out.println("Testing redundant moves on " + puzzle);
+            System.out.println("Testing redundant moves on " + scrambler.getKey());
 
             for (String move : scrambler.getSolvedState().getSuccessorsByName().keySet()) {
-                AlgorithmBuilder<?> ab = new AlgorithmBuilder(AlgorithmBuilder.MergingMode.NO_MERGING, scrambler.getSolvedState());
+                AlgorithmBuilder<? extends PuzzleState> ab = scrambler.startAlgorithmBuilder(AlgorithmBuilder.MergingMode.NO_MERGING);
                 ab.appendAlgorithm(move);
 
                 // Right now, it is true to say that for every single WCA puzzle,

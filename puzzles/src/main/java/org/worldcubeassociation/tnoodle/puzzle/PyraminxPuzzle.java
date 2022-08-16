@@ -2,9 +2,7 @@ package org.worldcubeassociation.tnoodle.puzzle;
 
 import org.worldcubeassociation.tnoodle.Puzzle;
 import org.worldcubeassociation.tnoodle.PuzzleSolutionEngine;
-import org.worldcubeassociation.tnoodle.PuzzleSvgPainter;
 import org.worldcubeassociation.tnoodle.algorithm.PuzzleStateAndGenerator;
-import org.worldcubeassociation.tnoodle.drawing.PyraminxPainter;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.solver.PyraminxSolver;
 import org.worldcubeassociation.tnoodle.state.PyraminxState;
@@ -58,11 +56,6 @@ public class PyraminxPuzzle extends Puzzle<PyraminxState> {
     @Override
     public PyraminxState getSolvedState() {
         return new PyraminxState();
-    }
-
-    @Override
-    public PuzzleSvgPainter<PyraminxState> getPainter() {
-        return new PyraminxPainter();
     }
 
     @Override

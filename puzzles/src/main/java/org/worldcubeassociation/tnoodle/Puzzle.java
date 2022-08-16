@@ -1,8 +1,5 @@
 package org.worldcubeassociation.tnoodle;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,10 +12,7 @@ import org.timepedia.exporter.client.Export;
 import org.timepedia.exporter.client.ExportClosure;
 import org.timepedia.exporter.client.Exportable;
 import org.timepedia.exporter.client.NoExport;
-import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.solver.BidirectionalBFSSolver;
-import org.worldcubeassociation.tnoodle.svglite.Color;
-import org.worldcubeassociation.tnoodle.svglite.Svg;
 import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
 /**
@@ -34,7 +28,7 @@ import org.worldcubeassociation.tnoodle.util.ArrayUtils;
  *
  */
 @ExportClosure
-public abstract class Puzzle<PS extends PuzzleState<PS>> implements Exportable {
+public abstract class Puzzle<PS extends AbstractPuzzleState<PS>> implements Exportable {
     private static final Logger l = Logger.getLogger(Puzzle.class.getName());
     protected int wcaMinScrambleDistance = 2;
 
@@ -74,7 +68,7 @@ public abstract class Puzzle<PS extends PuzzleState<PS>> implements Exportable {
      * @param r The instance of Random you must use as your source of randomness when generating scrambles.
      * @return A String containing the scramble, where turns are assumed to be separated by whitespace.
      */
-    public final String generateWcaScramble(Random r) {
+    public final String generateScramble(Random r) {
         PuzzleSolutionEngine<PS> engine = getSolutionEngine();
 
         PuzzleStateAndGenerator<PS> psag;
@@ -82,78 +76,6 @@ public abstract class Puzzle<PS extends PuzzleState<PS>> implements Exportable {
             psag = generateRandomMoves(r);
         } while(engine.solveIn(psag.state, wcaMinScrambleDistance - 1) != null);
         return psag.generator;
-    }
-
-    private String[] generateScrambles(Random r, int count) {
-        String[] scrambles = new String[count];
-        for(int i = 0; i < count; i++) {
-            scrambles[i] = generateWcaScramble(r);
-        }
-        return scrambles;
-    }
-
-    private final SecureRandom r = getSecureRandom();
-    public static SecureRandom getSecureRandom() {
-        try {
-            try {
-                return SecureRandom.getInstance("SHA1PRNG", "SUN");
-            } catch(NoSuchProviderException e) {
-                l.log(Level.SEVERE, "Couldn't get SecureRandomInstance", e);
-                return SecureRandom.getInstance("SHA1PRNG");
-            }
-        } catch(NoSuchAlgorithmException e) {
-            l.log(Level.SEVERE, "Couldn't get SecureRandomInstance", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Export
-    public final String generateScramble() {
-        return generateWcaScramble(r);
-    }
-
-    @Export
-    public final String[] generateScrambles(int count) {
-        return generateScrambles(r, count);
-    }
-
-    /**
-     * seeded scrambles, these can't be cached, so they'll be a little slower
-     *
-     * @param seed The seed to be used for generating this scramble
-     * @return A scramble similar to {@link #generateScramble}, except that it is guaranteed to be based on {@code seed}
-     */
-    @Export
-    public final String generateSeededScramble(String seed) {
-        return generateSeededScramble(seed.getBytes());
-    }
-
-    @Export
-    public final String[] generateSeededScrambles(String seed, int count) {
-        return generateSeededScrambles(seed.getBytes(), count);
-    }
-
-    private String generateSeededScramble(byte[] seed) {
-        // We must create our own Random because
-        // other threads can access the static one.
-        // Also, setSeed supplements an existing seed,
-        // rather than replacing it.
-        // TODO - consider using something other than SecureRandom for seeded scrambles,
-        // because we really, really want this to be portable across platforms (desktop java, gwt, and android)
-        // https://github.com/thewca/tnoodle/issues/146
-        SecureRandom r = getSecureRandom();
-        r.setSeed(seed);
-        return generateWcaScramble(r);
-    }
-
-    private String[] generateSeededScrambles(byte[] seed, int count) {
-        // We must create our own Random because
-        // other threads can access the static one.
-        // Also, setSeed supplements an existing seed,
-        // rather than replacing it.
-        SecureRandom r = getSecureRandom();
-        r.setSeed(seed);
-        return generateScrambles(r, count);
     }
 
     /**
@@ -172,17 +94,6 @@ public abstract class Puzzle<PS extends PuzzleState<PS>> implements Exportable {
 
     public PuzzleSolutionEngine<PS> getSolutionEngine() {
         return new BidirectionalBFSSolver<>(getSolvedState());
-    }
-
-    public abstract PuzzleSvgPainter<PS> getPainter();
-
-    public Svg drawScramble(String scramble, Map<String, Color> colorScheme) throws InvalidScrambleException {
-        if (scramble == null) {
-            return drawScramble("", colorScheme);
-        }
-
-        PS puzzleState = this.getSolvedState().applyAlgorithm(scramble);
-        return getPainter().drawScramble(puzzleState, colorScheme);
     }
 
     /**
@@ -205,7 +116,7 @@ public abstract class Puzzle<PS extends PuzzleState<PS>> implements Exportable {
      *         state achieved by applying that scramble.
      */
     @NoExport
-    public PuzzleStateAndGenerator<PS> generateRandomMoves(Random r) {
+    protected PuzzleStateAndGenerator<PS> generateRandomMoves(Random r) {
         AlgorithmBuilder<PS> ab = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.NO_MERGING, getSolvedState());
 
         while(ab.getTotalCost() < getRandomMoveCount()) {

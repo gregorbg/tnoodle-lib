@@ -1,9 +1,7 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
 import org.worldcubeassociation.tnoodle.Puzzle;
-import org.worldcubeassociation.tnoodle.PuzzleSvgPainter;
 import org.worldcubeassociation.tnoodle.algorithm.PuzzleStateAndGenerator;
-import org.worldcubeassociation.tnoodle.drawing.ClockPainter;
 import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.state.ClockState;
 
@@ -26,11 +24,6 @@ public class ClockPuzzle extends Puzzle<ClockState> {
     @Override
     public ClockState getSolvedState() {
         return new ClockState();
-    }
-
-    @Override
-    public PuzzleSvgPainter<ClockState> getPainter() {
-        return new ClockPainter();
     }
 
     @Override

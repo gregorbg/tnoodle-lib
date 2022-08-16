@@ -1,6 +1,6 @@
 package org.worldcubeassociation.tnoodle.state;
 
-import org.worldcubeassociation.tnoodle.PuzzleState;
+import org.worldcubeassociation.tnoodle.AbstractPuzzleState;
 import org.worldcubeassociation.tnoodle.solver.PyraminxSolver;
 import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class PyraminxState extends PuzzleState<PyraminxState> {
+public class PyraminxState extends AbstractPuzzleState<PyraminxState> {
     public int[][] image;
     /** Trying to make an ascii art of the pyraminx stickers position...
      *

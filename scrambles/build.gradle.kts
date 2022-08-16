@@ -25,8 +25,10 @@ configureSignatures(publishing)
 dependencies {
     implementation(project(":puzzles"))
 
+    api(project(":wca-events"))
+    api(project(":drawing"))
+
     testImplementation(project(":state"))
-    testImplementation(project(":drawing"))
     testImplementation(project(":min2phase"))
 }
 

@@ -1,8 +1,7 @@
 package org.worldcubeassociation.tnoodle.scrambleanalysis;
 
-import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
-import org.worldcubeassociation.tnoodle.puzzle.ThreeByThreeCubePuzzle;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidScrambleException;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
+import org.worldcubeassociation.tnoodle.scrambles.WcaScrambler;
 import org.worldcubeassociation.tnoodle.state.CubeState;
 
 import java.util.List;
@@ -18,9 +17,8 @@ public class App {
 
         // Main test
         int numberOfScrambles = 6500;
-        CubePuzzle puzzle = new ThreeByThreeCubePuzzle();
 
-        List<String> scrambles = ScrambleProvider.generateWcaScrambles(puzzle, numberOfScrambles);
+        List<String> scrambles = ScrambleProvider.generateWcaScrambles(WcaScrambler.THREE, numberOfScrambles);
         List<CubeState> representations = ScrambleProvider.convertToCubeStates(scrambles);
 
         boolean passed = CubeTest.testScrambles(representations);
