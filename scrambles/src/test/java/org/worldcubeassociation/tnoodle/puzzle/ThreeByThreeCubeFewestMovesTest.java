@@ -1,12 +1,12 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
-import org.worldcubeassociation.tnoodle.scrambles.AlgorithmBuilder;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidScrambleException;
-import org.worldcubeassociation.tnoodle.scrambles.Puzzle;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.worldcubeassociation.tnoodle.Puzzle;
+import org.worldcubeassociation.tnoodle.algorithm.AlgorithmBuilder;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.solver.TwoPhaseCubeSolver;
 import org.worldcubeassociation.tnoodle.state.CubeState;
 
@@ -82,7 +82,7 @@ public class ThreeByThreeCubeFewestMovesTest {
         for (int i = 0; i < 10; i++) {
             String uncancelledScramble = threeFm.generateWcaScramble(r);
 
-            AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<CubeState>(threeFm, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+            AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES, threeFm.getSolvedState());
             ab.appendAlgorithm(uncancelledScramble);
 
             String scramble = ab.getStateAndGenerator().generator;

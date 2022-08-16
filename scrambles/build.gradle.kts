@@ -23,13 +23,11 @@ configureMavenPublication("lib-scrambles")
 configureSignatures(publishing)
 
 dependencies {
-    api(project(":svglite"))
+    implementation(project(":puzzles"))
 
-    implementation(project(":min2phase"))
-    implementation(project(":threephase"))
-    implementation(project(":sq12phase"))
-
-    api(libs.gwt.exporter)
+    testImplementation(project(":state"))
+    testImplementation(project(":drawing"))
+    testImplementation(project(":min2phase"))
 }
 
 configureJUnit5()

@@ -1,8 +1,10 @@
 rootProject.name = "tnoodle-lib"
 
+include("distribution-analysis")
+include("drawing")
 include("min2phase")
+include("puzzles")
 include("scrambles")
-include("scrambleanalysis")
 include("sq12phase")
-include("svglite")
+include("state")
 include("threephase")

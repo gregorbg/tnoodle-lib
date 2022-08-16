@@ -1,6 +1,9 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
-import org.worldcubeassociation.tnoodle.scrambles.*;
+import org.worldcubeassociation.tnoodle.Puzzle;
+import org.worldcubeassociation.tnoodle.PuzzleSolutionEngine;
+import org.worldcubeassociation.tnoodle.algorithm.AlgorithmBuilder;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.solver.TwoPhaseSquareSolver;
 import org.worldcubeassociation.tnoodle.state.SquareOneState;
 import org.junit.jupiter.api.Test;
@@ -14,7 +17,7 @@ public class SquareOnePuzzleTest {
         Puzzle<SquareOneState> sq1 = new SquareOnePuzzle();
         PuzzleSolutionEngine<SquareOneState> engine = new TwoPhaseSquareSolver();
 
-        AlgorithmBuilder<SquareOneState> ab = new AlgorithmBuilder<SquareOneState>(sq1, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+        AlgorithmBuilder<SquareOneState> ab = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES, sq1.getSolvedState());
 
         assertEquals(ab.getTotalCost(), 0);
 
@@ -62,7 +65,7 @@ public class SquareOnePuzzleTest {
     private String solveScrambleStringIn(Puzzle<SquareOneState> puzzle, String scramble, int n) throws InvalidMoveException {
         PuzzleSolutionEngine<SquareOneState> engine = new TwoPhaseSquareSolver();
 
-        AlgorithmBuilder<SquareOneState> ab = new AlgorithmBuilder<SquareOneState>(puzzle, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+        AlgorithmBuilder<SquareOneState> ab = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES, puzzle.getSolvedState());
         ab.appendAlgorithm(scramble);
 
         return engine.solveIn(ab.getState(), n);

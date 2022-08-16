@@ -6,8 +6,12 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.worldcubeassociation.tnoodle.algorithm.AlgorithmBuilder;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.scrambles.*;
 import org.worldcubeassociation.tnoodle.puzzle.ClockPuzzle;
 import org.worldcubeassociation.tnoodle.puzzle.SquareOnePuzzle;
@@ -22,10 +26,7 @@ import org.worldcubeassociation.tnoodle.solver.TwoByTwoSolver.TwoByTwoState;
 import org.junit.jupiter.api.Test;
 import org.timepedia.exporter.client.Export;
 import org.timepedia.exporter.client.Exportable;
-import org.worldcubeassociation.tnoodle.state.ClockState;
-import org.worldcubeassociation.tnoodle.state.CubeState;
-import org.worldcubeassociation.tnoodle.state.MegaminxState;
-import org.worldcubeassociation.tnoodle.state.PyraminxState;
+import org.worldcubeassociation.tnoodle.state.*;
 import org.worldcubeassociation.tnoodle.util.ArrayUtils;
 
 public class HugeScrambleTest {
@@ -71,7 +72,7 @@ public class HugeScrambleTest {
     }
 
     @Test
-    public void testScrambleFiltering() throws InvalidScrambleException, IOException {
+    public void testScrambleFiltering() throws InvalidScrambleException {
         System.out.println("Testing scramble filtering");
 
         int SCRAMBLE_COUNT = 10;
@@ -133,7 +134,7 @@ public class HugeScrambleTest {
         LockHolder lh = new LockHolder();
 
         int SCRAMBLE_COUNT = 10;
-        boolean drawScramble = true;
+        final boolean drawScramble = true;
 
         for(PuzzleRegistry lazyScrambler : PuzzleRegistry.values()) {
             final String puzzle = lazyScrambler.getKey();
@@ -153,25 +154,46 @@ public class HugeScrambleTest {
 
             // Drawing that scramble
             System.out.println("Drawing " + scramble);
-            scrambler.getPainter().drawScramble(scramble, null);
+            scrambler.drawScramble(scramble, null);
 
             // Scramblers should support "null" as the empty scramble
-            scrambler.getPainter().drawScramble(null, null);
+            scrambler.drawScramble(null, null);
 
             System.out.println("Generating & drawing 2 sets of " + SCRAMBLE_COUNT + " scrambles simultaneously." +
                                 " This is meant to shake out threading problems in scramblers.");
             final Object[] o = new Object[0];
-            ScrambleCacherListener<?> cacherStopper = (ScrambleCacherListener) src -> {
-                System.out.println(Thread.currentThread() + " " + src.getAvailableCount() + " / " + src.getCacheSize());
-                if(src.getAvailableCount() == src.getCacheSize()) {
-                    src.stop();
-                    synchronized(o) {
-                        o.notify();
+            ScrambleCacherListener cacherStopper = new ScrambleCacherListenerImpl() {
+                @Override
+                public void scrambleCacheUpdated(ScrambleCacher src) {
+                    System.out.println(Thread.currentThread() + " " + src.getAvailableCount() + " / " + src.getCacheSize());
+                    if(src.getAvailableCount() == src.getCacheSize()) {
+                        src.stop();
+                        synchronized(o) {
+                            o.notify();
+                        }
                     }
                 }
             };
-            ScrambleCacher<?> c1 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT, drawScramble, cacherStopper);
-            ScrambleCacher<?> c2 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT, drawScramble, cacherStopper);
+            ScrambleCacherListener cachedScrambleDrawer = new ScrambleCacherListenerImpl() {
+                @Override
+                public void scrambleGenerated(String scramble) {
+                    if(drawScramble) {
+                        // The drawScramble option exists so we can test out generating and drawing
+                        // a bunch of scrambles in 2 threads at the same time. See ScrambleTest.
+                        try {
+                            scrambler.drawScramble(scramble, null);
+                        } catch (InvalidScrambleException e1) {
+                            l.log(Level.SEVERE, "Error drawing scramble we just created. ", e1);
+                        }
+                    }
+                }
+            };
+            ScrambleCacher c1 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT);
+            c1.addCacheListener(cacherStopper);
+            c1.addCacheListener(cachedScrambleDrawer);
+            ScrambleCacher c2 = new ScrambleCacher(scrambler, SCRAMBLE_COUNT);
+            c2.addCacheListener(cacherStopper);
+            c2.addCacheListener(cachedScrambleDrawer);
             while(c1.isRunning() || c2.isRunning()) {
                 synchronized(o) {
                     try {
@@ -181,7 +203,6 @@ public class HugeScrambleTest {
                     }
                 }
             }
-
         }
         lh.setObjectToLock(null);
         System.out.println("\nTest passed!");
@@ -254,7 +275,7 @@ public class HugeScrambleTest {
         CubeState fwDone = solved.apply("Fw");
         assertTrue(bDone.equalsNormalized(fwDone));
 
-        AlgorithmBuilder<CubeState> ab3 = new AlgorithmBuilder<CubeState>(threes, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+        AlgorithmBuilder<CubeState> ab3 = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES, threes.getSolvedState());
         String alg = "D2 U' L2 B2 F2 D B2 U' B2 F D' F U' R F2 L2 D' B D F'";
         ab3.appendAlgorithm(alg);
         assertEquals(ab3.toString(), alg);
@@ -272,7 +293,7 @@ public class HugeScrambleTest {
         System.out.println("Testing algorithm builder");
 
         CubePuzzle fours = new CubePuzzle(4);
-        AlgorithmBuilder ab4 = new AlgorithmBuilder(fours, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+        AlgorithmBuilder<CubeState> ab4 = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES, fours.getSolvedState());
         String ogAlg = "Rw Lw";
         ab4.appendAlgorithm(ogAlg);
         String shortenedAlg = ab4.toString();
@@ -280,19 +301,19 @@ public class HugeScrambleTest {
         String[] shortenedAlgSplit = AlgorithmBuilder.splitAlgorithm(shortenedAlg);
         assertEquals(shortenedAlgSplit.length, 1);
 
-        Puzzle sq1 = new SquareOnePuzzle();
-        AlgorithmBuilder abSq1;
+        Puzzle<SquareOneState> sq1 = new SquareOnePuzzle();
+        AlgorithmBuilder<SquareOneState> abSq1;
 
-        abSq1 = new AlgorithmBuilder(sq1, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+        abSq1 = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES, sq1.getSolvedState());
         abSq1.appendAlgorithm("(1,0) (0,1)");
         assertEquals(abSq1.toString(), "(1,1)");
 
-        abSq1 = new AlgorithmBuilder(sq1, AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES);
+        abSq1 = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.CANONICALIZE_MOVES, sq1.getSolvedState());
         abSq1.appendAlgorithm("(0,1) (1,1)");
         assertEquals(abSq1.toString(), "(1,2)");
 
         CubePuzzle fives = new CubePuzzle(5);
-        AlgorithmBuilder ab5 = new AlgorithmBuilder(fives, AlgorithmBuilder.MergingMode.NO_MERGING);
+        AlgorithmBuilder<CubeState> ab5 = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.NO_MERGING, fives.getSolvedState());
         String alg = "U R 4Rw'";
         ab5.appendAlgorithm(alg);
         assertEquals(alg, ab5.toString());

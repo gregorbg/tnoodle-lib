@@ -1,8 +1,8 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
-import org.worldcubeassociation.tnoodle.scrambles.AlgorithmBuilder;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
-import org.worldcubeassociation.tnoodle.scrambles.PuzzleStateAndGenerator;
+import org.worldcubeassociation.tnoodle.algorithm.AlgorithmBuilder;
+import org.worldcubeassociation.tnoodle.algorithm.PuzzleStateAndGenerator;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
 import org.junit.jupiter.api.Test;
 import org.worldcubeassociation.tnoodle.state.CubeState;
 
@@ -19,7 +19,7 @@ public class NoInspectionFiveByFiveTest {
 
         assertEquals(reorient[0].toString(), "4Uw");
 
-        AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<CubeState>(fives, AlgorithmBuilder.MergingMode.NO_MERGING);
+        AlgorithmBuilder<CubeState> ab = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.NO_MERGING, solvedState);
         ab.appendAlgorithm("F R");
 
         PuzzleStateAndGenerator<CubeState> psag1 = ab.getStateAndGenerator();
@@ -28,7 +28,7 @@ public class NoInspectionFiveByFiveTest {
         //so the resulting scramble should be "F R 4Uw"
         assertEquals(psag2.generator, "F R 4Uw");
 
-        ab = new AlgorithmBuilder<CubeState>(fives, AlgorithmBuilder.MergingMode.NO_MERGING);
+        ab = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.NO_MERGING, solvedState);
         ab.appendAlgorithm("F D");
 
         psag1 = ab.getStateAndGenerator();
@@ -38,7 +38,7 @@ public class NoInspectionFiveByFiveTest {
         //scramble should be "F 4Uw"
         assertEquals(psag2.generator, "F 4Uw");
 
-        ab = new AlgorithmBuilder<CubeState>(fives, AlgorithmBuilder.MergingMode.NO_MERGING);
+        ab = new AlgorithmBuilder<>(AlgorithmBuilder.MergingMode.NO_MERGING, solvedState);
         ab.appendAlgorithm("D U D U");
 
         psag1 = ab.getStateAndGenerator();

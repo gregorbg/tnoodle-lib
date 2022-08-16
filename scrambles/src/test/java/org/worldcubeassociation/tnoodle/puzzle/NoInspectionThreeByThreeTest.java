@@ -1,10 +1,10 @@
 package org.worldcubeassociation.tnoodle.puzzle;
 
-import org.worldcubeassociation.tnoodle.scrambles.InvalidMoveException;
-import org.worldcubeassociation.tnoodle.scrambles.InvalidScrambleException;
-import org.worldcubeassociation.tnoodle.scrambles.Puzzle;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.worldcubeassociation.tnoodle.Puzzle;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidScrambleException;
 import org.worldcubeassociation.tnoodle.solver.TwoPhaseCubeSolver;
 import org.worldcubeassociation.tnoodle.state.CubeState;
 

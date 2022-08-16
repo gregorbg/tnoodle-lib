@@ -1,5 +1,6 @@
 package org.worldcubeassociation.tnoodle.scrambles;
 
+import org.worldcubeassociation.tnoodle.Puzzle;
 import org.worldcubeassociation.tnoodle.puzzle.*;
 
 public enum PuzzleRegistry {

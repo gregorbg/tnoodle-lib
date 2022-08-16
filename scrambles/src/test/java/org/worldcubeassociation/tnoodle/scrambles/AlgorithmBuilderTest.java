@@ -1,5 +1,8 @@
 package org.worldcubeassociation.tnoodle.scrambles;
 
+import org.worldcubeassociation.tnoodle.Puzzle;
+import org.worldcubeassociation.tnoodle.algorithm.AlgorithmBuilder;
+import org.worldcubeassociation.tnoodle.exceptions.InvalidMoveException;
 import org.worldcubeassociation.tnoodle.puzzle.CubePuzzle;
 
 import org.junit.jupiter.api.Test;
@@ -28,7 +31,7 @@ public class AlgorithmBuilderTest {
             System.out.println("Testing redundant moves on " + puzzle);
 
             for (String move : scrambler.getSolvedState().getSuccessorsByName().keySet()) {
-                AlgorithmBuilder<?> ab = new AlgorithmBuilder(scrambler, AlgorithmBuilder.MergingMode.NO_MERGING);
+                AlgorithmBuilder<?> ab = new AlgorithmBuilder(AlgorithmBuilder.MergingMode.NO_MERGING, scrambler.getSolvedState());
                 ab.appendAlgorithm(move);
 
                 // Right now, it is true to say that for every single WCA puzzle,
