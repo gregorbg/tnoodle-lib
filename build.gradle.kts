@@ -20,3 +20,10 @@ nexusPublishing {
 tasks.create("generateDebugRelease") {
     dependsOn(":scrambles:shadowJar")
 }
+
+allprojects {
+    tasks.withType<JavaExec> {
+        val existingPath = systemProperties["java.library.path"]
+        systemProperties["java.library.path"] = "$existingPath:${project.rootDir}".trimStart(':')
+    }
+}

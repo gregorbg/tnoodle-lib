@@ -33,3 +33,14 @@ dependencies {
 }
 
 configureJUnit5()
+
+tasks.create<JavaCompile>("generateJniHeaders") {
+    classpath = configurations["runtimeClasspath"]
+
+    val jniDir = "$buildDir/generated/jni"
+
+    destinationDirectory.set(file(jniDir))
+    options.compilerArgs.addAll(listOf("-h", jniDir))
+
+    source = sourceSets["main"].java
+}
