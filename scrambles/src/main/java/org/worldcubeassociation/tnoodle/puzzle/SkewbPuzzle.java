@@ -45,13 +45,13 @@ public class SkewbPuzzle extends Puzzle {
         } catch (InvalidScrambleException e) {
             throw new RuntimeException(e);
         }
+
         return new PuzzleStateAndGenerator(pState, scramble);
     }
 
     /*************************************************************
      * Functions to display the puzzle
      */
-
 
     private static final Map<String, Color> defaultColorScheme = new HashMap<>();
     static {
