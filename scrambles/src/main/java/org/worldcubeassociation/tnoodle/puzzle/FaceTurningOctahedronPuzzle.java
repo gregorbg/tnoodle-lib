@@ -39,28 +39,14 @@ public class FaceTurningOctahedronPuzzle extends Puzzle {
 
     private static HashMap<String, Color> defaultColorScheme = new HashMap<>();
     static {
-        defaultColorScheme.put("U",  new Color(0xffffff));
-        defaultColorScheme.put("R",  new Color(0xEC0000));
-        defaultColorScheme.put("R",  new Color(0xFF0000)); // csTimer
-        defaultColorScheme.put("R",  new Color(0xFF0000)); // cubing.js
-        defaultColorScheme.put("F",  new Color(0x02D040));
-        defaultColorScheme.put("F",  new Color(0x00DD00)); // csTimer
-        defaultColorScheme.put("F",  new Color(0x44EE00)); // cubing.js
-        defaultColorScheme.put("L",  new Color(0x8A1AFF));
-        defaultColorScheme.put("L",  new Color(0x880088)); // csTimer
-        defaultColorScheme.put("L",  new Color(0x8800DD)); // cubing.js
-        defaultColorScheme.put("B",  new Color(0x304FFE));
-        defaultColorScheme.put("B",  new Color(0x0000FF)); // csTimer
-        defaultColorScheme.put("B",  new Color(0x2266FF)); // cubing.js
-        defaultColorScheme.put("BL", new Color(0xFF8B24));
-        defaultColorScheme.put("BL", new Color(0xFFAA00)); // csTimer
-        defaultColorScheme.put("BL", new Color(0xFF8000)); // cubing.js
-        defaultColorScheme.put("D",  new Color(0xFDD835));
-        defaultColorScheme.put("D",  new Color(0xFFFF00)); // csTimer
-        defaultColorScheme.put("D",  new Color(0xF4F400)); // cubing.js
-        defaultColorScheme.put("BR", new Color(0x999999));
-        defaultColorScheme.put("BR", new Color(0xBBBBBB)); // csTimer
-        defaultColorScheme.put("BR", new Color(0xAAAAAA)); // cubing.js
+        defaultColorScheme.put("U", Color.WHITE);
+        defaultColorScheme.put("R", Color.RED);
+        defaultColorScheme.put("F", Color.GREEN);
+        defaultColorScheme.put("L", Color.PURPLE);
+        defaultColorScheme.put("B", Color.BLUE);
+        defaultColorScheme.put("BL", Color.ORANGE);
+        defaultColorScheme.put("D", Color.YELLOW);
+        defaultColorScheme.put("BR", Color.GRAY);
     }
     @Override
     public HashMap<String, Color> getDefaultColorScheme() {
