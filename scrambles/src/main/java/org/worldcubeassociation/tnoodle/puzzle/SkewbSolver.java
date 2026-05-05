@@ -8,7 +8,7 @@ public class SkewbSolver {
 
     private static final int[] fact = { 1, 1, 1, 3, 12, 60, 360 };//fact[x] = x!/2
     private static final int TWIST_ORIENTATIONS = 2187; // 3^7, orientation of last corner is implicitly defined
-    private static final int FREE_CORNER_PERM = fact[4];
+    public static final int FREE_CORNER_PERM = fact[4];
     private static final int CENTER_PERM = fact[6];
     private static final int SKEWB_PERMUTATIONS = FREE_CORNER_PERM * CENTER_PERM;
     private static char[][] permmv = new char[SKEWB_PERMUTATIONS][N_MOVES];

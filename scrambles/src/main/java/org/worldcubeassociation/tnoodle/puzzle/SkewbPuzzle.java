@@ -108,6 +108,21 @@ public class SkewbPuzzle extends Puzzle {
     }
 
     public class SkewbState extends PuzzleState {
+        // Jaap's notation used in the solver
+        private static final int SOLVER_U  = 0;
+        private static final int SOLVER_FR = 1;
+        private static final int SOLVER_FL = 2;
+        private static final int SOLVER_BR = 3;
+        private static final int SOLVER_BL = 4;
+        private static final int SOLVER_D  = 5;
+
+        // The order of faces in our internal `image` representation
+        private final int[] colorToSolver = new int[] {
+            SOLVER_U, SOLVER_BR, SOLVER_FR, SOLVER_D, SOLVER_FL, SOLVER_BL
+        };
+
+        // Primary base faces for both the Fixed and Free corners
+        private final int[] CORNER_PRIMARY = { SOLVER_U, SOLVER_U, SOLVER_D, SOLVER_D };
 
         /**
          *           +---------+
@@ -228,6 +243,89 @@ public class SkewbPuzzle extends Puzzle {
                 }
             }
             return g;
+        }
+
+        public SkewbSolverState toSkewbSolverState() {
+            SkewbSolverState state = new SkewbSolverState();
+
+            int[] centers = new int[] {
+                colorToSolver[image[0][0]],
+                colorToSolver[image[2][0]],
+                colorToSolver[image[4][0]],
+                colorToSolver[image[1][0]],
+                colorToSolver[image[5][0]],
+                colorToSolver[image[3][0]]
+            };
+
+            int[][] fixedCorners = new int[][] {
+                { colorToSolver[image[0][4]], colorToSolver[image[1][1]], colorToSolver[image[2][2]] },
+                { colorToSolver[image[0][1]], colorToSolver[image[4][1]], colorToSolver[image[5][2]] },
+                { colorToSolver[image[3][1]], colorToSolver[image[4][4]], colorToSolver[image[2][3]] },
+                { colorToSolver[image[3][4]], colorToSolver[image[1][4]], colorToSolver[image[5][3]] }
+            };
+
+            int[][] freeCorners = new int[][] {
+                { colorToSolver[image[0][3]], colorToSolver[image[2][1]], colorToSolver[image[4][2]] },
+                { colorToSolver[image[0][2]], colorToSolver[image[5][1]], colorToSolver[image[1][2]] },
+                { colorToSolver[image[3][2]], colorToSolver[image[2][4]], colorToSolver[image[1][3]] },
+                { colorToSolver[image[3][3]], colorToSolver[image[5][4]], colorToSolver[image[4][3]] }
+            };
+
+            // To identify corner permutations, we essentially use the same "sum trick" as PyraminxState:
+            //   Every corner on the Skewb folds to a unique sum because the stickers on that corner never change
+            int[] currentFixedPerm = new int[4];
+            for (int i = 0; i < 4; i++) {
+                int sum = fixedCorners[i][0] + fixedCorners[i][1] + fixedCorners[i][2];
+                switch (sum) {
+                    case 4:  currentFixedPerm[i] = 0; break; // U-FR-BR (0+1+3)
+                    case 6:  currentFixedPerm[i] = 1; break; // U-FL-BL (0+2+4)
+                    case 8:  currentFixedPerm[i] = 2; break; // D-FL-FR (5+2+1)
+                    case 12: currentFixedPerm[i] = 3; break; // D-BL-BR (5+4+3)
+                    default: assert false;
+                }
+            }
+
+            int[] currentFreePerm = new int[4];
+            for (int i = 0; i < 4; i++) {
+                int sum = freeCorners[i][0] + freeCorners[i][1] + freeCorners[i][2];
+                switch (sum) {
+                    case 3:  currentFreePerm[i] = 0; break;
+                    case 7:  currentFreePerm[i] = 1; break;
+                    case 9:  currentFreePerm[i] = 2; break;
+                    case 11: currentFreePerm[i] = 3; break;
+                    default: assert false;
+                }
+            }
+
+            // To identify orientation, we turn the piece long enough until it matches
+            //   the corresponding center base color (because that's how the solver defines "oriented")
+            int[] fixedTwist = new int[4];
+            for (int i = 0; i < 4; i++) {
+                int primaryColor = CORNER_PRIMARY[currentFixedPerm[i]];
+                while (fixedCorners[i][fixedTwist[i]] != primaryColor) {
+                    fixedTwist[i]++;
+                    assert fixedTwist[i] < 3;
+                }
+            }
+
+            int[] freeTwist = new int[4];
+            for (int i = 0; i < 4; i++) {
+                int primaryColor = CORNER_PRIMARY[currentFreePerm[i]];
+                while (freeCorners[i][freeTwist[i]] != primaryColor) {
+                    freeTwist[i]++;
+                    assert freeTwist[i] < 3;
+                }
+            }
+
+            state.perm = SkewbSolver.packCenterPerm(centers) * SkewbSolver.FREE_CORNER_PERM + SkewbSolver.packCornerPerm(currentFreePerm);
+            state.twst = SkewbSolver.packCornerOrient(freeTwist, fixedTwist);
+
+            return state;
+        }
+
+        @Override
+        public String solveIn(int n) {
+            return skewbSolver.solveIn(toSkewbSolverState(), n, new Random());
         }
 
         @Override
