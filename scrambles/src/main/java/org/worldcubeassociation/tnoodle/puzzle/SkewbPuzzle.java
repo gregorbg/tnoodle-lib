@@ -36,7 +36,7 @@ public class SkewbPuzzle extends Puzzle {
     @Override
     public PuzzleStateAndGenerator generateRandomMoves(Random r) {
         SkewbSolverState state = skewbSolver.randomState(r);
-        String scramble = skewbSolver.generateExactly(state, MIN_SCRAMBLE_LENGTH, r);
+        String scramble = skewbSolver.generateExactly(state, MIN_SCRAMBLE_LENGTH);
         assert scramble.split(" ").length == MIN_SCRAMBLE_LENGTH;
 
         PuzzleState pState;
@@ -325,7 +325,7 @@ public class SkewbPuzzle extends Puzzle {
 
         @Override
         public String solveIn(int n) {
-            return skewbSolver.solveIn(toSkewbSolverState(), n, new Random());
+            return skewbSolver.solveIn(toSkewbSolverState(), n);
         }
 
         @Override

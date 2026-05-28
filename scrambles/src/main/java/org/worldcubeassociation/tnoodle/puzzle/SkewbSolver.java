@@ -11,10 +11,10 @@ public class SkewbSolver {
     public static final int FREE_CORNER_PERM = fact[4];
     private static final int CENTER_PERM = fact[6];
     private static final int SKEWB_PERMUTATIONS = FREE_CORNER_PERM * CENTER_PERM;
-    private static char[][] permmv = new char[SKEWB_PERMUTATIONS][N_MOVES];
-    private static char[][] twstmv = new char[TWIST_ORIENTATIONS][N_MOVES];
-    private static byte[] permprun = new byte[SKEWB_PERMUTATIONS];
-    private static byte[] twstprun = new byte[TWIST_ORIENTATIONS];
+    private static final char[][] permmv = new char[SKEWB_PERMUTATIONS][N_MOVES];
+    private static final char[][] twstmv = new char[TWIST_ORIENTATIONS][N_MOVES];
+    private static final byte[] permprun = new byte[SKEWB_PERMUTATIONS];
+    private static final byte[] twstprun = new byte[TWIST_ORIENTATIONS];
 
     private static final int MAX_SOLUTION_LENGTH = 12;
 
@@ -265,24 +265,63 @@ public class SkewbSolver {
         return state;
     }
 
-    public String solveIn(SkewbSolverState state, int length, Random randomizeMoves) {
-        int[] sol = new int[MAX_SOLUTION_LENGTH];
-        int solutionLength = search(0, state.perm, state.twst, length, -1, sol, randomizeMoves);
-        if (solutionLength != -1) {
-            return getSolution(sol, solutionLength);
-        } else {
-            return null;
-        }
+    public String solveIn(SkewbSolverState state, int length) {
+        return solve(state, length, false, false);
     }
 
-    public String generateExactly(SkewbSolverState state, int length, Random randomizeMoves) {
+    public String generateExactly(SkewbSolverState state, int length) {
+        return solve(state, length, true, true);
+    }
+
+    private String solve(SkewbSolverState state, int desiredLength, boolean exactLength, boolean inverse) {
+        Random r = new Random();
         int[] sol = new int[MAX_SOLUTION_LENGTH];
-        int solutionLength = search(0, state.perm, state.twst, length, -1, sol, randomizeMoves);
-        if (solutionLength != -1) {
-            return getSolution(sol, solutionLength);
-        } else {
+
+        int solutionLength = -1;
+        int length = exactLength ? desiredLength : 0;
+
+        while (length <= desiredLength) {
+            solutionLength = search(0, state.perm, state.twst, length, -1, sol, r);
+
+            if (solutionLength != -1) {
+                break;
+            }
+
+            length++;
+        }
+
+        if (solutionLength == -1) {
             return null;
         }
+
+        if (solutionLength == 0) {
+            return "";
+        }
+
+        String fcnSolution = getSolution(sol, solutionLength);
+
+        if (inverse) {
+            String[] moves = fcnSolution.split(" ");
+            StringBuilder scramble = new StringBuilder(fcnSolution.length());
+
+            for (int i = moves.length - 1; i >= 0; i--) {
+                String move = moves[i];
+
+                // Skewb can only ever have 120 or -120 degree turns,
+                //   so this is an exhaustive either-or.
+                if (move.endsWith("'")) {
+                    scramble.append(move, 0, move.length() - 1);
+                } else {
+                    scramble.append(move).append("'");
+                }
+
+                scramble.append(" ");
+            }
+
+            return scramble.toString().trim();
+        }
+
+        return fcnSolution;
     }
 
     /**
