@@ -262,6 +262,7 @@ public class SkewbPuzzle extends Puzzle {
         }
 
         public SkewbSolverState toSkewbSolverState() {
+            // Look at the orientation of the four Jaap corners
             int[] fcnTwist = new int[4];
             for (int i = 0; i < 4; i++) {
                 while (this.image[FIXED_CORNER_COORDS[i][fcnTwist[i]][0]][FIXED_CORNER_COORDS[i][fcnTwist[i]][1]] != 0 &&
@@ -271,9 +272,20 @@ public class SkewbPuzzle extends Puzzle {
                 }
             }
 
+            // FCN and Jaap notation have misaligned reference frames.
+            // In FCN, the "Holy Corner" (UFR) is fixed. Jaap's solver relies on the
+            // Opposite Orbit (the four corners it considers "fixed") to anchor orientation.
+            // Because FCN 'B' moves act on this Opposite Orbit, the sum of their twists modulo 3
+            // acts as a perfect mathematical ledger of the reference frame misalignment.
+            // We calculate this offset and apply the corresponding Z2_CORRECTION palette shift.
             int orientSum = fcnTwist[0] + fcnTwist[1] + fcnTwist[2] + fcnTwist[3];
             int[] z2Correction = Z2_CORRECTIONS[orientSum % 3];
 
+            // We must now physically rotate the puzzle by z2 (swapping U<->D, R<->B, F<->L).
+            // Why? The Jaap notation to WCA-FCN string converter implicitly assumes the puzzle
+            // is in this tilted reference frame. As a beautiful side effect, this rotation
+            // physically maps all four Jaap fixed corners into their required permutation slots,
+            // locking the absolute orientation for the solver.
             int[][] jaapImage = new int[][] {
                 { z2Correction[image[3][0]], z2Correction[image[3][2]], z2Correction[image[3][4]], z2Correction[image[3][1]], z2Correction[image[3][3]] },
                 { z2Correction[image[5][0]], z2Correction[image[5][4]], z2Correction[image[5][3]], z2Correction[image[5][2]], z2Correction[image[5][1]] },
@@ -310,10 +322,10 @@ public class SkewbPuzzle extends Puzzle {
 
                 int sum = c0 + c1 + c2;
                 switch (sum) {
-                    case 3:  currentFreePerm[i] = 0; break;
-                    case 7:  currentFreePerm[i] = 1; break;
-                    case 9:  currentFreePerm[i] = 2; break;
-                    case 11: currentFreePerm[i] = 3; break;
+                    case 3:  currentFreePerm[i] = 0; break; // Front (0+1+2)
+                    case 7:  currentFreePerm[i] = 1; break; // Back (0+4+3)
+                    case 9:  currentFreePerm[i] = 2; break; // Right-Down (5+1+3)
+                    case 11: currentFreePerm[i] = 3; break; // Left-Down (5+4+2)
                     default: assert false;
                 }
 
