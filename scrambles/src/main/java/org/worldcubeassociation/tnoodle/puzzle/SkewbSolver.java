@@ -176,6 +176,8 @@ public class SkewbSolver {
     public static int packCenterPerm(int[] centers) {
         int idx = 0;
         int val = 0x543210;
+        // Stopping early (normally you would expect i < 5)
+        //   because the sixth element is implicitly defined by the first five
         for (int i = 0; i < 4; i++) {
             int v = centers[i] << 2;
             idx = (6 - i) * idx + ((val >> v) & 0xf);
@@ -192,6 +194,8 @@ public class SkewbSolver {
     public static int packCornerPerm(int[] freeCorners) {
         int idx = 0;
         int val = 0x3210;
+        // Stopping early (normally you would expect i < 3)
+        //   because the sixth element is implicitly defined by the first five
         for (int i = 0; i < 2; i++) {
             int v = freeCorners[i] << 2;
             idx = (4 - i) * idx + ((val >> v) & 0xf);
