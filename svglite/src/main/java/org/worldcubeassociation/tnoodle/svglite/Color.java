@@ -1,12 +1,22 @@
 package org.worldcubeassociation.tnoodle.svglite;
 
 public class Color {
+    // NxN
     public static final Color WHITE = new Color(255, 255, 255);
     public final static Color YELLOW = new Color(255, 234, 0);
     public static final Color GREEN = new Color(41, 224,  22);
     public static final Color BLUE = new Color(0, 61, 255);
     public static final Color RED = new Color(255, 0, 51);
     public static final Color ORANGE = new Color(255, 126, 0);
+    // Megaminx and others
+    public static final Color PURPLE = new Color(135, 17, 220);
+    public static final Color MIDDLE_GRAY = new Color(134, 134, 134);
+    // Megaminx-only
+    public static final Color DARK_GREEN = new Color(0, 118, 0);
+    public static final Color PINK = new Color(255, 0, 184);
+    public static final Color SKY_BLUE = new Color(0, 206, 255);
+    public static final Color BEIGE = new Color(232, 206, 125);
+
     public static final Color BLACK = new Color(0, 0, 0);
     public static final Color GRAY = new Color(128, 128, 128);
 
