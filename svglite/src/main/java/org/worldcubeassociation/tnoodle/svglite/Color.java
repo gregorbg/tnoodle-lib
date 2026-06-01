@@ -19,8 +19,8 @@ public class Color {
     // Square-1
     public static final Color DARK_GRAY = new Color(75, 75, 75);
 
+    // SVG util values (text, borders, etc.)
     public static final Color BLACK = new Color(0, 0, 0);
-    public static final Color GRAY = new Color(128, 128, 128);
 
     private int r, g, b, a;
     public Color(int r, int g, int b, int a) {
