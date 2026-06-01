@@ -16,6 +16,8 @@ public class Color {
     public static final Color PINK = new Color(255, 0, 184);
     public static final Color SKY_BLUE = new Color(0, 206, 255);
     public static final Color BEIGE = new Color(232, 206, 125);
+    // Square-1
+    public static final Color DARK_GRAY = new Color(75, 75, 75);
 
     public static final Color BLACK = new Color(0, 0, 0);
     public static final Color GRAY = new Color(128, 128, 128);
