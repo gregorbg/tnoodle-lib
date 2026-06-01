@@ -18,6 +18,9 @@ public class Color {
     public static final Color BEIGE = new Color(232, 206, 125);
     // Square-1
     public static final Color DARK_GRAY = new Color(75, 75, 75);
+    // Clock
+    public static final Color NAVY_BLUE = new Color(17, 51, 102);
+    public static final Color ICE_GRAY = new Color(204, 221, 238);
 
     // SVG util values (text, borders, etc.)
     public static final Color BLACK = new Color(0, 0, 0);
