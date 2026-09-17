@@ -288,14 +288,20 @@ public class SkewbPuzzle extends Puzzle {
             //   It does not matter at this point in time how these four orbit corners are permuted. It only matters that
             //   they are all in the same orbit, and we don't (yet) care which exact corner we're looking at
             //   within the orbit. We only care about that it's in this orbit and that it has an orientation w.r.t. white/yellow faces.
-            int[] jaapTwist = new int[4];
+            // For every B move that was applied, the sum of orientations on that orbit will have shifted by 1 (mod 3).
+            //   So we need to rotate our entire Skewb (later) according to this shifted reference frame.
+            int fcnBOrbitOrientation = 0;
             for (int i = 0; i < 4; i++) {
                 int[][] coords = FIXED_CORNER_COORDS[i];
-                while (this.image[coords[jaapTwist[i]][0]][coords[jaapTwist[i]][1]] != ORIENTATION_U &&
-                    this.image[coords[jaapTwist[i]][0]][coords[jaapTwist[i]][1]] != ORIENTATION_D) {
-                    jaapTwist[i]++;
-                    assert jaapTwist[i] < 3;
+                int orient = 0;
+
+                while (this.image[coords[orient][0]][coords[orient][1]] != ORIENTATION_U &&
+                    this.image[coords[orient][0]][coords[orient][1]] != ORIENTATION_D) {
+                    orient++;
+                    assert orient < 3;
                 }
+
+                fcnBOrbitOrientation += orient;
             }
 
             // The most trivial way to "swap" the two orbits of corners on a Skewb is by performing z2.
@@ -303,14 +309,10 @@ public class SkewbPuzzle extends Puzzle {
             //   see SkewbSolver#getSolution for details.
             int[] jaapCorrection = cloneArr(Z2);
 
-            // For every B move that was applied, the sum of orientations on that orbit will have shifted by 1 (mod 3).
-            // So we need to rotate our entire Skewb according to this shifted reference frame.
-            int fcnBOrbitOrientation = (jaapTwist[0] + jaapTwist[1] + jaapTwist[2] + jaapTwist[3]) % 3;
-
             // The integer values passed to the `cycle` method calls in this next block
             //   are describing the six faces of the Skewb int[][] representation.
             //   See the Skewb ASCII-art further above for a visual mapping.
-            for (int i = 0; i < fcnBOrbitOrientation; i++) {
+            for (int i = 0; i < fcnBOrbitOrientation % 3; i++) {
                 // Rotate the three centers/colors around the FCN "holy corner" clockwise
                 cycle(0, 4, 2, jaapCorrection);
                 // Rotate the three centers/colors around FCN B counter-clockwise
